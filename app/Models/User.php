@@ -52,4 +52,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(\App\Models\Profile::class);
     }
+
+    public function mediaSosial()
+    {
+        return $this->hasOne(\App\Models\MediaSosial::class);
+    }
 }

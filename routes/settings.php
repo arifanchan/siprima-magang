@@ -22,4 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::get('settings/appearance', function () {
         return Inertia::render('settings/appearance');
     })->name('appearance');
+
+    Route::get('settings/social-media', [\App\Http\Controllers\Settings\MediaSosialController::class, 'edit'])->name('media-sosial.edit');
+    Route::patch('settings/social-media', [\App\Http\Controllers\Settings\MediaSosialController::class, 'update'])->name('media-sosial.update');
 });
