@@ -3,38 +3,24 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Account',
-        href: '/settings/account',
-        icon: null,
-    },
-    {
-        title: 'Profile',
-        href: '/settings/profile',
-        icon: null,
-    },
-    {
-        title: 'Password',
-        href: '/settings/password',
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        href: '/settings/appearance',
-        icon: null,
-    },
-    {
-        title: 'Social Media',
-        href: '/settings/social-media',
-        icon: null,
-    },
-];
-
 export default function SettingsLayout({ children }: PropsWithChildren) {
+    const { auth } = usePage().props as any;
+    const role = auth?.user?.role;
+
+    const sidebarNavItems: NavItem[] = [
+        { title: 'Account', href: '/settings/account', icon: null },
+        { title: 'Profile', href: '/settings/profile', icon: null },
+        { title: 'Password', href: '/settings/password', icon: null },
+        { title: 'Appearance', href: '/settings/appearance', icon: null },
+        { title: 'Social Media', href: '/settings/social-media', icon: null },
+        ...(role === 'admin' ? [{ title: 'Admin Profile', href: '/settings/admin-profile', icon: null }] : []),
+        ...(role === 'mentor' ? [{ title: 'Mentor Profile', href: '/settings/mentor-profile', icon: null }] : []),
+        ...(role === 'student' ? [{ title: 'Student Profile', href: '/settings/student-profile', icon: null }] : []),
+    ];
+
     // When server-side rendering, we only render the layout on the client...
     if (typeof window === 'undefined') {
         return null;

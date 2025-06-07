@@ -57,4 +57,14 @@ class User extends Authenticatable
     {
         return $this->hasOne(\App\Models\MediaSosial::class);
     }
+
+    public function admin()
+    {
+        return $this->hasOne(\App\Models\Admin::class);
+    }
+
+    public function student()
+    {
+        return $this->hasOne(\App\Models\Student::class);
+    }
 }
