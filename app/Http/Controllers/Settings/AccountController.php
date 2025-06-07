@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Http\Requests\Settings\AccountUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -11,23 +11,23 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class ProfileController extends Controller
+class AccountController extends Controller
 {
     /**
-     * Show the user's profile settings page.
+     * Show the user's account settings page.
      */
     public function edit(Request $request): Response
     {
-        return Inertia::render('settings/profile', [
+        return Inertia::render('settings/account', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
         ]);
     }
 
     /**
-     * Update the user's profile settings.
+     * Update the user's account settings.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(AccountUpdateRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
 
@@ -37,7 +37,7 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return to_route('profile.edit');
+        return to_route('account.edit');
     }
 
     /**

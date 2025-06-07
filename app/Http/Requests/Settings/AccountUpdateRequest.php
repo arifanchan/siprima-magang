@@ -1,13 +1,14 @@
 <?php
+// AccountUpdateRequest moved from ProfileUpdateRequest
+// ...existing code from ProfileUpdateRequest now in AccountUpdateRequest...
 
 namespace App\Http\Requests\Settings;
 
-use App\Models\User;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\User;
 
-class ProfileUpdateRequest extends FormRequest
+class AccountUpdateRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -18,7 +19,6 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-
             'email' => [
                 'required',
                 'string',
@@ -27,6 +27,13 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique(User::class)->ignore($this->user()->id),
+            ],
+            // role tidak perlu divalidasi di sini, hanya admin yang boleh mengubah role
         ];
     }
 }
