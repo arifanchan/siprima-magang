@@ -32,13 +32,41 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'emailOrPhone' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) {
+                    if (!filter_var($value, FILTER_VALIDATE_EMAIL) && !preg_match('/^08[0-9]{8,13}$/', $value)) {
+                        $fail('The :attribute must be a valid email address or phone number (starting with 08).');
+                    }
+                },
+                function ($attribute, $value, $fail) {
+                    if (filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                        if (\App\Models\User::where('email', $value)->exists()) {
+                            $fail('The email has already been taken.');
+                        }
+                    } elseif (preg_match('/^08[0-9]{8,13}$/', $value)) {
+                        if (\App\Models\User::where('phone', $value)->exists()) {
+                            $fail('The phone number has already been taken.');
+                        }
+                    }
+                },
+            ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $email = null;
+        $phone = null;
+        if (filter_var($request->emailOrPhone, FILTER_VALIDATE_EMAIL)) {
+            $email = $request->emailOrPhone;
+        } elseif (preg_match('/^08[0-9]{8,13}$/', $request->emailOrPhone)) {
+            $phone = $request->emailOrPhone;
+        }
+
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email,
+            'email' => $email,
+            'phone' => $phone,
             'password' => Hash::make($request->password),
         ]);
 
