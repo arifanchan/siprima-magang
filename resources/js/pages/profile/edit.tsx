@@ -164,3 +164,4 @@ export default function ProfileEdit({ user, profile }: any) {
         </AppLayout>
     );
 }
+

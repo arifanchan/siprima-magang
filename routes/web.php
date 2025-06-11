@@ -25,6 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/medsos/edit', [\App\Http\Controllers\MediaSosialEditController::class, 'update'])->name('profile.medsos.update');
     Route::get('/profile/documents/edit', [\App\Http\Controllers\DocumentEditController::class, 'edit'])->name('profile.documents.edit');
     Route::post('/profile/documents/edit', [\App\Http\Controllers\DocumentEditController::class, 'update'])->name('profile.documents.update');
+    Route::resource('internship-applications', \App\Http\Controllers\InternshipApplicationController::class)->only(['index', 'show', 'create', 'store']);
 });
 
 require __DIR__.'/settings.php';

@@ -218,3 +218,5 @@ export default function ProfileShow({ user, profile, student, mediaSosial, docum
         </AppLayout>
     );
 }
+
+

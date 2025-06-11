@@ -18,6 +18,11 @@ const mainNavItems: NavItem[] = [
         href: '/profile',
         icon: UserIcon,
     },
+    {
+        title: 'Pengajuan Magang',
+        href: '/internship-applications',
+        icon: Folder,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
