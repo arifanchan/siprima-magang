@@ -1,5 +1,5 @@
 import { useForm, Link } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import Heading from '@/components/heading';
 import { Card } from '@/components/ui/card';
@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
+import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
+import FilePreviewButton from '@/components/ui/file-preview-button';
 
 const profileNavItems = [
     { title: 'Edit Data Pribadi', key: 'personal', href: '/profile/edit' },
@@ -28,6 +31,9 @@ export default function ProfileEdit({ user, profile }: any) {
         photo_file: undefined,
     });
 
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalFile, setModalFile] = useState<string|null>(null);
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post('/profile/edit', {
@@ -37,6 +43,17 @@ export default function ProfileEdit({ user, profile }: any) {
 
     return (
         <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/dashboard' }, { title: 'Profile', href: '/profile' }, { title: 'Edit Data Pribadi', href: '/profile/edit' }]}>
+            {/* Modal Preview Foto Profil */}
+            <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+                <DialogContent className="max-w-2xl w-full">
+                    <DialogClose asChild>
+                        <button className="absolute top-2 right-2 text-xl">&times;</button>
+                    </DialogClose>
+                    {modalFile && (
+                        <img src={modalFile} alt="Preview Foto Profil" className="max-h-[70vh] mx-auto" />
+                    )}
+                </DialogContent>
+            </Dialog>
             <div className="px-4 py-6">
                 <Heading title="Edit Data Pribadi" description="Perbarui data pribadi Anda untuk keperluan magang." />
                 <div className="flex flex-col lg:flex-row lg:space-x-12">
@@ -58,7 +75,7 @@ export default function ProfileEdit({ user, profile }: any) {
                     <div className="flex-1">
                         <Card className="max-w-2xl mx-auto p-6 mt-4">
                             <form onSubmit={submit} className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <Label htmlFor="name">Nama</Label>
                                         <Input id="name" value={data.name} onChange={e => setData('name', e.target.value)} required />
@@ -79,13 +96,27 @@ export default function ProfileEdit({ user, profile }: any) {
                                         <Input id="birth_date" type="date" value={data.birth_date} onChange={e => setData('birth_date', e.target.value)} required />
                                         <InputError message={errors.birth_date} />
                                     </div>
-                                    <div className="md:col-span-2">
+                                    <div>
                                         <Label htmlFor="gender">Jenis Kelamin</Label>
-                                        <select id="gender" className="input w-full mt-1" value={data.gender} onChange={e => setData('gender', e.target.value)} required>
-                                            <option value="">Pilih</option>
-                                            <option value="male">Laki-laki</option>
-                                            <option value="female">Perempuan</option>
-                                        </select>
+                                        <div className="mt-1">
+                                            <div className={cn('inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800')}>
+                                                {[{value: 'male', label: 'Laki-laki'}, {value: 'female', label: 'Perempuan'}].map(opt => (
+                                                    <button
+                                                        type="button"
+                                                        key={opt.value}
+                                                        onClick={() => setData('gender', opt.value)}
+                                                        className={cn(
+                                                            'flex items-center rounded-md px-3.5 py-1.5 transition-colors',
+                                                            data.gender === opt.value
+                                                                ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
+                                                                : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
+                                                        )}
+                                                    >
+                                                        <span className="text-sm">{opt.label}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
                                         <InputError message={errors.gender} />
                                     </div>
                                     <div>
@@ -105,6 +136,16 @@ export default function ProfileEdit({ user, profile }: any) {
                                     </div>
                                     <div className="md:col-span-2">
                                         <Label htmlFor="photo_file">Foto Profil</Label>
+                                        {profile?.photo_file && (
+                                            <div className="mb-2">
+                                                <FilePreviewButton
+                                                    label="Lihat Foto Profil"
+                                                    onClick={() => { setModalFile(`/storage/${profile.photo_file}`); setModalOpen(true); }}
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                                </FilePreviewButton>
+                                            </div>
+                                        )}
                                         <Input id="photo_file" type="file" accept="image/*" onChange={e => setData('photo_file', e.target.files && e.target.files[0] ? e.target.files[0] : undefined)} />
                                         <InputError message={errors.photo_file} />
                                     </div>

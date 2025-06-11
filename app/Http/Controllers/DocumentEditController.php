@@ -26,14 +26,30 @@ class DocumentEditController extends Controller
             'ktm_or_student_card_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'transcript_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
+        // Simpan file baru jika ada, jika tidak gunakan file lama
         if ($request->hasFile('ktp_file')) {
+            if ($student->ktp_file) {
+                \Storage::delete($student->ktp_file);
+            }
             $validated['ktp_file'] = $request->file('ktp_file')->store('documents', 'public');
+        } else {
+            $validated['ktp_file'] = $student->ktp_file;
         }
         if ($request->hasFile('ktm_or_student_card_file')) {
+            if ($student->ktm_or_student_card_file) {
+                \Storage::delete($student->ktm_or_student_card_file);
+            }
             $validated['ktm_or_student_card_file'] = $request->file('ktm_or_student_card_file')->store('documents', 'public');
+        } else {
+            $validated['ktm_or_student_card_file'] = $student->ktm_or_student_card_file;
         }
         if ($request->hasFile('transcript_file')) {
+            if ($student->transcript_file) {
+                \Storage::delete($student->transcript_file);
+            }
             $validated['transcript_file'] = $request->file('transcript_file')->store('documents', 'public');
+        } else {
+            $validated['transcript_file'] = $student->transcript_file;
         }
         if ($student) {
             $student->update($validated);
