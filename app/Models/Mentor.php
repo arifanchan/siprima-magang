@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Admin extends Model
+class Mentor extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -14,8 +14,13 @@ class Admin extends Model
         'user_id',
         'nip',
         'division',
+        'expertise',
         'position',
         'bio',
+        'dss_status',
+        'dss_score',
+        'dss_recommendation',
+        'dss_notes',
     ];
 
     public function user()
@@ -23,9 +28,8 @@ class Admin extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Relasi ke profile melalui user
-    public function profile()
+    public function internshipActivities()
     {
-        return $this->hasOneThrough(Profile::class, User::class, 'id', 'user_id', 'user_id', 'id');
+        return $this->hasMany(\App\Models\InternshipActivity::class);
     }
 }

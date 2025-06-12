@@ -31,5 +31,9 @@ class InternshipApplication extends Model
     {
         return $this->belongsTo(Student::class);
     }
-}
 
+    public function internshipActivity()
+    {
+        return $this->hasOne(\App\Models\InternshipActivity::class);
+    }
+}
