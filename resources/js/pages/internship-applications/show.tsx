@@ -21,6 +21,13 @@ export default function InternshipApplicationShow({ user, profile, student, appl
   const [modalOpen, setModalOpen] = useState(false);
   const [modalFile, setModalFile] = useState<string|null>(null);
 
+  // Helper untuk path dokumen magang
+  const getInternshipDocumentPath = (file: string|undefined|null, folder: string) => {
+    if (!file) return '';
+    if (file.includes('/')) return file;
+    return `/storage/users/${user.id}/internship/${folder}/${file}`;
+  };
+
   return (
     <AppLayout breadcrumbs={[
       { title: 'Dashboard', href: '/dashboard' },
@@ -106,7 +113,7 @@ export default function InternshipApplicationShow({ user, profile, student, appl
                       <FilePreviewButton
                         label={<span className="flex items-center gap-1"><Eye className="w-4 h-4" /> Lihat</span>}
                         onClick={() => {
-                          setModalFile(application.application_letter.startsWith('http') ? application.application_letter : `/storage/${application.application_letter}`);
+                          setModalFile(application.application_letter.startsWith('http') ? application.application_letter : getInternshipDocumentPath(application.application_letter, 'application_letter'));
                           setModalOpen(true);
                         }}
                       />
@@ -118,38 +125,29 @@ export default function InternshipApplicationShow({ user, profile, student, appl
                     <Label>CV</Label>
                     {application.cv_file ? (
                       <FilePreviewButton
-                        label={<span className="flex items-center gap-1"><Eye className="w-4 h-4" /> Lihat</span>}
-                        onClick={() => {
-                          setModalFile(application.cv_file.startsWith('http') ? application.cv_file : `/storage/${application.cv_file}`);
-                          setModalOpen(true);
-                        }}
-                      />
-                    ) : (
-                      <span className="text-muted-foreground">Belum diupload</span>
-                    )}
+                        label="Lihat CV"
+                        onClick={() => setModalFile(getInternshipDocumentPath(application.cv_file, 'cv'))}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </FilePreviewButton>
+                    ) : '-'}
                   </div>
                   <div>
-                    <Label>Dokumen Lainnya</Label>
-                    {application.other_supporting_documents ? (
-                      <ul className="list-disc ml-6 mt-1">
-                        {(Array.isArray(application.other_supporting_documents)
-                          ? application.other_supporting_documents
-                          : JSON.parse(application.other_supporting_documents || '[]'))
-                          .map((doc: string, idx: number) => (
-                            <li key={idx} className="flex items-center gap-2">
-                              <FilePreviewButton
-                                label={<span className="flex items-center gap-1"><Eye className="w-4 h-4" /> {`Dokumen ${idx + 1}`}</span>}
-                                onClick={() => {
-                                  setModalFile(doc.startsWith('http') ? doc : `/storage/${doc}`);
-                                  setModalOpen(true);
-                                }}
-                              />
-                            </li>
-                          ))}
-                      </ul>
-                    ) : (
-                      <span className="text-muted-foreground">Tidak ada dokumen tambahan</span>
-                    )}
+                    <Label>Dokumen Pendukung</Label>
+                    {Array.isArray(application.other_supporting_documents) && application.other_supporting_documents.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {application.other_supporting_documents.map((doc: string, idx: number) => (
+                          <FilePreviewButton
+                            key={idx}
+                            label={`Lihat Dokumen #${idx + 1}`}
+                            onClick={() => setModalFile(getInternshipDocumentPath(doc, 'supporting_documents'))}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </FilePreviewButton>
+                        ))}
+                      </div>
+                    ) : '-'}
+
                   </div>
                   <div>
                     <Label>Deskripsi</Label>

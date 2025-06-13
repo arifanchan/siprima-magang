@@ -54,9 +54,9 @@ class UserResource extends Resource
                         ->previewable(true)
                         ->downloadable(true)
                         ->preserveFilenames()
-                        ->getUploadedFileNameForStorageUsing(fn ($file, $state) => $state ?? $file->getClientOriginalName())
+                        ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
                         ->dehydrateStateUsing(fn ($state) => $state)
-                        ->default(fn ($record) => $record?->profile?->photo_file),
+                        ->default(fn ($record) => is_array($record?->profile?->photo_file) ? array_values($record->profile->photo_file)[0] ?? null : $record?->profile?->photo_file),
                     // Media Sosial fields
                     Forms\Components\TextInput::make('mediaSosial.instagram')->label('Instagram'),
                     Forms\Components\TextInput::make('mediaSosial.facebook')->label('Facebook'),
@@ -79,23 +79,23 @@ class UserResource extends Resource
                             ->previewable(true)
                             ->downloadable(true)
                             ->preserveFilenames()
-                            ->getUploadedFileNameForStorageUsing(fn ($file, $state) => $state ?? $file->getClientOriginalName())
+                            ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
                             ->dehydrateStateUsing(fn ($state) => $state)
-                            ->default(fn ($record) => $record?->student?->ktp_file),
+                            ->default(fn ($record) => is_array($record?->student?->ktp_file) ? array_values($record->student->ktp_file)[0] ?? null : $record?->student?->ktp_file),
                         Forms\Components\FileUpload::make('student.ktm_or_student_card_file')->label('KTM/Student Card')
                             ->previewable(true)
                             ->downloadable(true)
                             ->preserveFilenames()
-                            ->getUploadedFileNameForStorageUsing(fn ($file, $state) => $state ?? $file->getClientOriginalName())
+                            ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
                             ->dehydrateStateUsing(fn ($state) => $state)
-                            ->default(fn ($record) => $record?->student?->ktm_or_student_card_file),
+                            ->default(fn ($record) => is_array($record?->student?->ktm_or_student_card_file) ? array_values($record->student->ktm_or_student_card_file)[0] ?? null : $record?->student?->ktm_or_student_card_file),
                         Forms\Components\FileUpload::make('student.transcript_file')->label('Transcript')
                             ->previewable(true)
                             ->downloadable(true)
                             ->preserveFilenames()
-                            ->getUploadedFileNameForStorageUsing(fn ($file, $state) => $state ?? $file->getClientOriginalName())
+                            ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
                             ->dehydrateStateUsing(fn ($state) => $state)
-                            ->default(fn ($record) => $record?->student?->transcript_file),
+                            ->default(fn ($record) => is_array($record?->student?->transcript_file) ? array_values($record->student->transcript_file)[0] ?? null : $record?->student?->transcript_file),
                         Forms\Components\TextInput::make('student.advisor_name')->label('Advisor Name')->id('student_advisor_name'),
                         Forms\Components\TextInput::make('student.advisor_phone')->label('Advisor Phone')->id('student_advisor_phone'),
                     ])->visible(fn ($get) => in_array($get('role'), ['student', 'user'])),
@@ -153,5 +153,84 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+
+    public static function mutateFormDataBeforeCreate(array $data): array
+    {
+        // Only allow fields that are in the User model's fillable property
+        $fillable = (new \App\Models\User())->getFillable();
+        $filtered = [];
+        foreach ($fillable as $key) {
+            if (array_key_exists($key, $data)) {
+                $filtered[$key] = $data[$key];
+            }
+        }
+        return $filtered;
+    }
+
+    public static function afterCreate(
+        \Filament\Resources\Pages\CreateRecord $page,
+        \Illuminate\Database\Eloquent\Model $record
+    ): void {
+        $data = $page->form->getState();
+        // Profile
+        if (!empty($data['profile'])) {
+            $record->profile()->create($data['profile']);
+        }
+        // Media Sosial
+        if (!empty($data['mediaSosial'])) {
+            $record->mediaSosial()->create($data['mediaSosial']);
+        }
+        // Student
+        if (!empty($data['student']) && in_array($record->role, ['student', 'user'])) {
+            $record->student()->create($data['student']);
+        }
+        // Mentor
+        if (!empty($data['mentor']) && $record->role === 'mentor') {
+            $record->mentor()->create(array_merge($data['mentor'], ['user_id' => $record->id]));
+        }
+        // Admin
+        if (!empty($data['admin']) && $record->role === 'admin') {
+            $record->admin()->create($data['admin']);
+        }
+    }
+
+    public static function mutateFormDataBeforeSave(array $data): array
+    {
+        $fillable = (new \App\Models\User())->getFillable();
+        $filtered = [];
+        foreach ($fillable as $key) {
+            if (array_key_exists($key, $data)) {
+                $filtered[$key] = $data[$key];
+            }
+        }
+        return $filtered;
+    }
+
+    public static function afterSave(
+        \Filament\Resources\Pages\EditRecord $page,
+        \Illuminate\Database\Eloquent\Model $record
+    ): void {
+        $data = $page->form->getState();
+        // Profile
+        if (!empty($data['profile'])) {
+            $record->profile()->updateOrCreate([], $data['profile']);
+        }
+        // Media Sosial
+        if (!empty($data['mediaSosial'])) {
+            $record->mediaSosial()->updateOrCreate([], $data['mediaSosial']);
+        }
+        // Student
+        if (!empty($data['student']) && in_array($record->role, ['student', 'user'])) {
+            $record->student()->updateOrCreate([], $data['student']);
+        }
+        // Mentor
+        if (!empty($data['mentor']) && $record->role === 'mentor') {
+            $record->mentor()->updateOrCreate([], $data['mentor']);
+        }
+        // Admin
+        if (!empty($data['admin']) && $record->role === 'admin') {
+            $record->admin()->updateOrCreate([], $data['admin']);
+        }
     }
 }

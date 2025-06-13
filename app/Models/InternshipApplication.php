@@ -27,6 +27,10 @@ class InternshipApplication extends Model
         'dss_notes',
     ];
 
+    protected $casts = [
+        'other_supporting_documents' => 'array',
+    ];
+
     public function student()
     {
         return $this->belongsTo(Student::class);

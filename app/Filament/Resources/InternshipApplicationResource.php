@@ -56,23 +56,24 @@ class InternshipApplicationResource extends Resource
                             ->previewable(true)
                             ->downloadable(true)
                             ->preserveFilenames()
-                            ->getUploadedFileNameForStorageUsing(fn ($file, $state) => $state ?? $file->getClientOriginalName())
+                            ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
                             ->dehydrateStateUsing(fn ($state) => $state)
-                            ->default(fn ($record) => $record?->application_letter),
+                            ->default(fn ($record) => is_array($record?->application_letter) ? array_values($record->application_letter)[0] ?? null : $record?->application_letter),
                         Forms\Components\FileUpload::make('cv_file')->label('CV File')
                             ->previewable(true)
                             ->downloadable(true)
                             ->preserveFilenames()
-                            ->getUploadedFileNameForStorageUsing(fn ($file, $state) => $state ?? $file->getClientOriginalName())
+                            ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
                             ->dehydrateStateUsing(fn ($state) => $state)
-                            ->default(fn ($record) => $record?->cv_file),
+                            ->default(fn ($record) => is_array($record?->cv_file) ? array_values($record->cv_file)[0] ?? null : $record?->cv_file),
                         Forms\Components\FileUpload::make('other_supporting_documents')->label('Other Supporting Documents')
                             ->previewable(true)
                             ->downloadable(true)
                             ->preserveFilenames()
-                            ->getUploadedFileNameForStorageUsing(fn ($file, $state) => $state ?? $file->getClientOriginalName())
+                            ->multiple()
+                            ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
                             ->dehydrateStateUsing(fn ($state) => $state)
-                            ->default(fn ($record) => $record?->other_supporting_documents),
+                            ->default(fn ($record) => is_array($record?->other_supporting_documents) ? array_values($record->other_supporting_documents) : []),
                     ]),
                 // ...tambahkan field lain sesuai kebutuhan...
             ]);

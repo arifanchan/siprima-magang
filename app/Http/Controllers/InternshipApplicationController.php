@@ -58,12 +58,7 @@ class InternshipApplicationController extends Controller
 
     public function store(Request $request)
     {
-        $user = \Auth::user();
-        $student = $user->student;
-        if (!$student) {
-            return redirect()->back()->withErrors(['student' => 'Data siswa/mahasiswa tidak ditemukan.']);
-        }
-
+        $user = auth()->user();
         $validated = $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
@@ -73,23 +68,30 @@ class InternshipApplicationController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        // Handle file uploads
-        $letterPath = $request->file('letter_file')->store('internship_letters', 'public');
-        $cvPath = $request->file('cv_file') ? $request->file('cv_file')->store('internship_cvs', 'public') : null;
+        // Handle file uploads per user
+        $letterFilename = time() . '_' . $request->file('letter_file')->getClientOriginalName();
+        $request->file('letter_file')->storeAs('users/' . $user->id . '/internship/application_letters', $letterFilename, 'public');
+        $cvFilename = null;
+        if ($request->file('cv_file')) {
+            $cvFilename = time() . '_' . $request->file('cv_file')->getClientOriginalName();
+            $request->file('cv_file')->storeAs('users/' . $user->id . '/internship/cv', $cvFilename, 'public');
+        }
         $otherDocs = [];
         if ($request->hasFile('other_supporting_documents')) {
             foreach ($request->file('other_supporting_documents') as $file) {
-                $otherDocs[] = $file->store('internship_other_docs', 'public');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->storeAs('users/' . $user->id . '/internship/supporting_documents', $filename, 'public');
+                $otherDocs[] = $filename;
             }
         }
 
         $application = new \App\Models\InternshipApplication();
-        $application->student_id = $student->id;
+        $application->student_id = $user->student?->id;
         $application->start_date = $validated['start_date'];
         $application->end_date = $validated['end_date'];
-        $application->application_letter = $letterPath;
-        $application->cv_file = $cvPath;
-        $application->other_supporting_documents = $otherDocs ? json_encode($otherDocs) : null;
+        $application->application_letter = $letterFilename;
+        $application->cv_file = $cvFilename;
+        $application->other_supporting_documents = $otherDocs;
         $application->description = $validated['description'] ?? null;
         $application->status = 'pending';
         $application->save();

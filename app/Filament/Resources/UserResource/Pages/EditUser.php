@@ -54,45 +54,53 @@ class EditUser extends EditRecord
         $this->form->fill($data);
     }
 
-    // Tambahkan logic agar saat edit user, data relasi (profile, media sosial, student, mentor) ikut terupdate
-    // EditUser.php
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $profile = $data['profile'] ?? [];
-        $mediaSosial = $data['mediaSosial'] ?? [];
-        $student = $data['student'] ?? [];
-        $mentor = $data['mentor'] ?? [];
-        unset($data['profile'], $data['mediaSosial'], $data['student'], $data['mentor']);
-        $data['__profile'] = $profile;
-        $data['__mediaSosial'] = $mediaSosial;
-        $data['__student'] = $student;
-        $data['__mentor'] = $mentor;
-        return $data;
+        $fillable = (new \App\Models\User())->getFillable();
+        $filtered = [];
+        foreach ($fillable as $key) {
+            if (array_key_exists($key, $data)) {
+                // Special handling: if password is empty/null, do not update password
+                if ($key === 'password' && (empty($data[$key]) || $data[$key] === null)) {
+                    continue;
+                }
+                $filtered[$key] = $data[$key];
+            }
+        }
+        return $filtered;
     }
 
-    protected function afterSave(): void
+    public function save(bool $shouldRedirect = true, bool $shouldSendSavedNotification = true): void
     {
-        $user = $this->record;
-        $data = $this->data;
-        // Update or create profile
-        if (!empty($data['__profile'])) {
-            $user->profile()->updateOrCreate(['user_id' => $user->id], $data['__profile']);
+        $data = $this->form->getState();
+        $fillable = (new \App\Models\User())->getFillable();
+        $userData = [];
+        foreach ($fillable as $key) {
+            if (array_key_exists($key, $data)) {
+                // Special handling: if password is empty/null, do not update password
+                if ($key === 'password' && (empty($data[$key]) || $data[$key] === null)) {
+                    continue;
+                }
+                $userData[$key] = $data[$key];
+            }
         }
-        // Update or create media sosial
-        if (!empty($data['__mediaSosial'])) {
-            $user->mediaSosial()->updateOrCreate(['user_id' => $user->id], $data['__mediaSosial']);
+        $this->record->update($userData);
+        // Simpan relasi
+        if (!empty($data['profile'])) {
+            $this->record->profile()->updateOrCreate([], $data['profile']);
         }
-        // Update or create student
-        if (!empty($data['__student'])) {
-            $user->student()->updateOrCreate(['user_id' => $user->id], $data['__student']);
+        if (!empty($data['mediaSosial'])) {
+            $this->record->mediaSosial()->updateOrCreate([], $data['mediaSosial']);
         }
-        // Update or create mentor
-        if (!empty($data['__mentor'])) {
-            $user->mentor()->updateOrCreate(['user_id' => $user->id], $data['__mentor']);
+        if (!empty($data['student']) && in_array($this->record->role, ['student', 'user'])) {
+            $this->record->student()->updateOrCreate([], $data['student']);
         }
-        // Update or create admin
-        if (!empty($data['__admin'])) {
-            $user->admin()->updateOrCreate(['user_id' => $user->id], $data['__admin']);
+        if (!empty($data['mentor']) && $this->record->role === 'mentor') {
+            $this->record->mentor()->updateOrCreate([], $data['mentor']);
         }
+        if (!empty($data['admin']) && $this->record->role === 'admin') {
+            $this->record->admin()->updateOrCreate([], $data['admin']);
+        }
+        parent::save($shouldRedirect, $shouldSendSavedNotification);
     }
 }
