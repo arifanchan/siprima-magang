@@ -26,10 +26,10 @@ export default function DocumentsEdit({ profile }: any) {
     // Tambahkan state untuk modal preview dokumen
     const [modalOpen, setModalOpen] = useState(false);
     const [modalFile, setModalFile] = useState<string|null>(null);
-    // Helper untuk path dokumen per user
+    // Helper untuk path dokumen per user (identik dengan profile show/edit)
     const getDocumentFilePath = (file: string|undefined|null, folder: string) => {
         if (!file) return '';
-        if (file.includes('/')) return file;
+        if (file.includes('/')) return `/storage/${file.replace(/^storage\//, '')}`;
         return `/storage/users/${profile.user_id}/${folder}/${file}`;
     };
     const submit: FormEventHandler = (e) => {

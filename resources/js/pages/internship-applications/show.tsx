@@ -21,10 +21,12 @@ export default function InternshipApplicationShow({ user, profile, student, appl
   const [modalOpen, setModalOpen] = useState(false);
   const [modalFile, setModalFile] = useState<string|null>(null);
 
-  // Helper untuk path dokumen magang
+  // Helper untuk path dokumen magang (robust, handle /storage/, http, relative, dan legacy filename)
   const getInternshipDocumentPath = (file: string|undefined|null, folder: string) => {
     if (!file) return '';
-    if (file.includes('/')) return file;
+    if (file.startsWith('/storage/')) return file;
+    if (file.startsWith('http')) return file;
+    if (file.includes('/')) return `/storage/${file.replace(/^storage\//, '')}`;
     return `/storage/users/${user.id}/internship/${folder}/${file}`;
   };
 
@@ -125,29 +127,42 @@ export default function InternshipApplicationShow({ user, profile, student, appl
                     <Label>CV</Label>
                     {application.cv_file ? (
                       <FilePreviewButton
-                        label="Lihat CV"
-                        onClick={() => setModalFile(getInternshipDocumentPath(application.cv_file, 'cv'))}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </FilePreviewButton>
-                    ) : '-'}
+                        label={<span className="flex items-center gap-1"><Eye className="w-4 h-4" /> Lihat</span>}
+                        onClick={() => {
+                          setModalFile(application.cv_file.startsWith('http') ? application.cv_file : getInternshipDocumentPath(application.cv_file, 'cv'));
+                          setModalOpen(true);
+                        }}
+                      />
+                    ) : (
+                      <span className="text-muted-foreground">Belum diupload</span>
+                    )}
                   </div>
                   <div>
                     <Label>Dokumen Pendukung</Label>
-                    {Array.isArray(application.other_supporting_documents) && application.other_supporting_documents.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {application.other_supporting_documents.map((doc: string, idx: number) => (
-                          <FilePreviewButton
-                            key={idx}
-                            label={`Lihat Dokumen #${idx + 1}`}
-                            onClick={() => setModalFile(getInternshipDocumentPath(doc, 'supporting_documents'))}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </FilePreviewButton>
-                        ))}
-                      </div>
-                    ) : '-'}
-
+                    {(() => {
+  let docs = application.other_supporting_documents;
+  // Normalisasi: jika array asosiatif, ambil Object.values, jika array biasa, gunakan langsung
+  if (docs && typeof docs === 'object' && !Array.isArray(docs)) {
+    docs = Object.values(docs);
+  }
+  if (Array.isArray(docs) && docs.length > 0) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        {docs.map((doc: string, idx: number) => (
+          <FilePreviewButton
+            key={idx}
+            label={<span className="flex items-center gap-1"><Eye className="w-4 h-4" /> Lihat #{idx + 1}</span>}
+            onClick={() => {
+              setModalFile(doc.startsWith('http') ? doc : getInternshipDocumentPath(doc, 'supporting_documents'));
+              setModalOpen(true);
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
+  return <span className="text-muted-foreground">Belum diupload</span>;
+})()}
                   </div>
                   <div>
                     <Label>Deskripsi</Label>

@@ -40,4 +40,18 @@ class InternshipApplication extends Model
     {
         return $this->hasOne(\App\Models\InternshipActivity::class);
     }
+
+    public function getOtherSupportingDocumentsAttribute($value)
+    {
+        if (is_null($value)) {
+            return [];
+        }
+        $decoded = json_decode($value, true);
+        if (is_array($decoded)) {
+            // Jika array asosiatif, kembalikan array value saja
+            return array_values($decoded);
+        }
+        // Jika sudah array list atau null
+        return $decoded ?: [];
+    }
 }

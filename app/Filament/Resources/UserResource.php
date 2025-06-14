@@ -48,15 +48,19 @@ class UserResource extends Resource
                         ->required(),
                     Forms\Components\DatePicker::make('profile.birth_date')->label('Birth Date'),
                     Forms\Components\TextInput::make('profile.address')->label('Address'),
-                    Forms\Components\TextInput::make('profile.occupation')->label('Occupation'),
-                    Forms\Components\TextInput::make('profile.identity_number')->label('Identity Number'),
-                    Forms\Components\FileUpload::make('profile.photo_file')->label('Photo')
-                        ->previewable(true)
+                    Forms\Components\FileUpload::make('profile.photo_file')
+                        ->label('Profile Photo')
+                        ->directory(fn ($get, $state, $record) => $record ? 'users/' . $record->id . '/profile_photos' : null)
+                        ->disk('public')
                         ->downloadable(true)
-                        ->preserveFilenames()
-                        ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
-                        ->dehydrateStateUsing(fn ($state) => $state)
-                        ->default(fn ($record) => is_array($record?->profile?->photo_file) ? array_values($record->profile->photo_file)[0] ?? null : $record?->profile?->photo_file),
+                        ->previewable(true)
+                        ->visibility('public')
+                        ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
+                            return time() . '_' . $file->getClientOriginalName();
+                        })
+                        ->preserveFilenames(false)
+                        ->image()
+                        ->maxSize(2048),
                     // Media Sosial fields
                     Forms\Components\TextInput::make('mediaSosial.instagram')->label('Instagram'),
                     Forms\Components\TextInput::make('mediaSosial.facebook')->label('Facebook'),

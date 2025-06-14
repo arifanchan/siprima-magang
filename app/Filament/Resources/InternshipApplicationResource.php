@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\InternshipApplicationResource\Pages;
-use App\Filament\Resources\InternshipApplicationResource\RelationManagers;
 use App\Models\InternshipApplication;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -12,6 +11,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\FileUpload;
 
 class InternshipApplicationResource extends Resource
 {
@@ -21,6 +21,21 @@ class InternshipApplicationResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $getDirectory = function ($folder, $record = null) {
+            $userId = null;
+            $studentId = request()->input('student_id');
+            if ($studentId) {
+                $student = \App\Models\Student::find($studentId);
+                $userId = $student?->user_id;
+            }
+            if (!$userId && $record && isset($record->student) && $record->student) {
+                $userId = $record->student->user_id;
+            }
+            if (!$userId) {
+                $userId = auth()->id();
+            }
+            return "users/{$userId}/internship/{$folder}";
+        };
         return $form
             ->schema([
                 Forms\Components\Grid::make(2)
@@ -52,30 +67,44 @@ class InternshipApplicationResource extends Resource
                         Forms\Components\DatePicker::make('start_date')->label('Start Date')->required(),
                         Forms\Components\DatePicker::make('end_date')->label('End Date')->required(),
                         Forms\Components\Textarea::make('description')->label('Description'),
-                        Forms\Components\FileUpload::make('application_letter')->label('Application Letter')
+                        FileUpload::make('application_letter')
+                            ->label('Application Letter')
+                            ->disk('public')
+                            ->directory(fn ($get, $state, $record = null) => 'users/' . ($record?->student?->user_id ?? auth()->id()) . '/internship/application_letters')
                             ->previewable(true)
                             ->downloadable(true)
-                            ->preserveFilenames()
-                            ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
-                            ->dehydrateStateUsing(fn ($state) => $state)
-                            ->default(fn ($record) => is_array($record?->application_letter) ? array_values($record->application_letter)[0] ?? null : $record?->application_letter),
-                        Forms\Components\FileUpload::make('cv_file')->label('CV File')
+                            ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
+                                $userId = $record?->student?->user_id ?? auth()->id();
+                                return time() . '_' . $file->getClientOriginalName();
+                            })
+                            ->preserveFilenames(false)
+                            ->maxSize(2048),
+                        FileUpload::make('cv_file')
+                            ->label('CV')
+                            ->disk('public')
+                            ->directory(fn ($get, $state, $record = null) => 'users/' . ($record?->student?->user_id ?? auth()->id()) . '/internship/cv')
                             ->previewable(true)
                             ->downloadable(true)
-                            ->preserveFilenames()
-                            ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
-                            ->dehydrateStateUsing(fn ($state) => $state)
-                            ->default(fn ($record) => is_array($record?->cv_file) ? array_values($record->cv_file)[0] ?? null : $record?->cv_file),
-                        Forms\Components\FileUpload::make('other_supporting_documents')->label('Other Supporting Documents')
+                            ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
+                                return time() . '_' . $file->getClientOriginalName();
+                            })
+                            ->preserveFilenames(false)
+                            ->maxSize(2048),
+                        FileUpload::make('other_supporting_documents')
+                            ->label('Other Supporting Documents')
+                            ->disk('public')
+                            ->directory(fn ($get, $state, $record = null) => 'users/' . ($record?->student?->user_id ?? auth()->id()) . '/internship/supporting_documents')
                             ->previewable(true)
                             ->downloadable(true)
-                            ->preserveFilenames()
                             ->multiple()
-                            ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
-                            ->dehydrateStateUsing(fn ($state) => $state)
-                            ->default(fn ($record) => is_array($record?->other_supporting_documents) ? array_values($record->other_supporting_documents) : []),
+                            ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
+                                return time() . '_' . $file->getClientOriginalName();
+                            })
+                            ->preserveFilenames(false)
+                            ->maxSize(2048),
+                        // ...existing code...
                     ]),
-                // ...tambahkan field lain sesuai kebutuhan...
+                // ...existing code...
             ]);
     }
 
@@ -106,12 +135,23 @@ class InternshipApplicationResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
+    /**
+     * Helper untuk mendapatkan path file publik dokumen magang
+     */
+    public static function getPublicFilePath($userId, $folder, $file)
     {
-        return [
-            //
-        ];
+        if (!$file) return '';
+        // Jika sudah path absolut (http/https) atau sudah mengandung /storage/, kembalikan apa adanya
+        if (str_starts_with($file, 'http') || str_starts_with($file, '/storage/')) return $file;
+        // Jika sudah mengandung users/ di depannya, tambahkan slash jika belum ada
+        if (str_starts_with($file, 'users/')) return "/storage/{$file}";
+        // Jika file mengandung slash di awal
+        if (str_starts_with($file, '/users/')) return "/storage" . $file;
+        // Default: nama file saja
+        return "/storage/users/{$userId}/internship/{$folder}/{$file}";
     }
+
+
 
     public static function getPages(): array
     {

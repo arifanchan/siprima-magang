@@ -70,18 +70,22 @@ class InternshipApplicationController extends Controller
 
         // Handle file uploads per user
         $letterFilename = time() . '_' . $request->file('letter_file')->getClientOriginalName();
+        $letterRelativePath = 'users/' . $user->id . '/internship/application_letters/' . $letterFilename;
         $request->file('letter_file')->storeAs('users/' . $user->id . '/internship/application_letters', $letterFilename, 'public');
         $cvFilename = null;
+        $cvRelativePath = null;
         if ($request->file('cv_file')) {
             $cvFilename = time() . '_' . $request->file('cv_file')->getClientOriginalName();
+            $cvRelativePath = 'users/' . $user->id . '/internship/cv/' . $cvFilename;
             $request->file('cv_file')->storeAs('users/' . $user->id . '/internship/cv', $cvFilename, 'public');
         }
         $otherDocs = [];
         if ($request->hasFile('other_supporting_documents')) {
             foreach ($request->file('other_supporting_documents') as $file) {
                 $filename = time() . '_' . $file->getClientOriginalName();
+                $relativePath = 'users/' . $user->id . '/internship/supporting_documents/' . $filename;
                 $file->storeAs('users/' . $user->id . '/internship/supporting_documents', $filename, 'public');
-                $otherDocs[] = $filename;
+                $otherDocs[] = $relativePath;
             }
         }
 
@@ -89,8 +93,8 @@ class InternshipApplicationController extends Controller
         $application->student_id = $user->student?->id;
         $application->start_date = $validated['start_date'];
         $application->end_date = $validated['end_date'];
-        $application->application_letter = $letterFilename;
-        $application->cv_file = $cvFilename;
+        $application->application_letter = $letterRelativePath;
+        $application->cv_file = $cvRelativePath;
         $application->other_supporting_documents = $otherDocs;
         $application->description = $validated['description'] ?? null;
         $application->status = 'pending';

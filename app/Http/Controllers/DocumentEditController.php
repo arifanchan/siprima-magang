@@ -29,31 +29,34 @@ class DocumentEditController extends Controller
         // Simpan file baru jika ada, jika tidak gunakan file lama
         if ($request->hasFile('ktp_file')) {
             if ($student->ktp_file) {
-                \Storage::delete('public/users/' . $user->id . '/ktp/' . $student->ktp_file);
+                \Storage::delete('public/' . $student->ktp_file);
             }
             $filename = time() . '_' . $request->file('ktp_file')->getClientOriginalName();
+            $relativePath = 'users/' . $user->id . '/ktp/' . $filename;
             $request->file('ktp_file')->storeAs('users/' . $user->id . '/ktp', $filename, 'public');
-            $validated['ktp_file'] = $filename;
+            $validated['ktp_file'] = $relativePath;
         } else {
             $validated['ktp_file'] = $student->ktp_file;
         }
         if ($request->hasFile('ktm_or_student_card_file')) {
             if ($student->ktm_or_student_card_file) {
-                \Storage::delete('public/users/' . $user->id . '/ktm/' . $student->ktm_or_student_card_file);
+                \Storage::delete('public/' . $student->ktm_or_student_card_file);
             }
             $filename = time() . '_' . $request->file('ktm_or_student_card_file')->getClientOriginalName();
+            $relativePath = 'users/' . $user->id . '/ktm/' . $filename;
             $request->file('ktm_or_student_card_file')->storeAs('users/' . $user->id . '/ktm', $filename, 'public');
-            $validated['ktm_or_student_card_file'] = $filename;
+            $validated['ktm_or_student_card_file'] = $relativePath;
         } else {
             $validated['ktm_or_student_card_file'] = $student->ktm_or_student_card_file;
         }
         if ($request->hasFile('transcript_file')) {
             if ($student->transcript_file) {
-                \Storage::delete('public/users/' . $user->id . '/transcript/' . $student->transcript_file);
+                \Storage::delete('public/' . $student->transcript_file);
             }
             $filename = time() . '_' . $request->file('transcript_file')->getClientOriginalName();
+            $relativePath = 'users/' . $user->id . '/transcript/' . $filename;
             $request->file('transcript_file')->storeAs('users/' . $user->id . '/transcript', $filename, 'public');
-            $validated['transcript_file'] = $filename;
+            $validated['transcript_file'] = $relativePath;
         } else {
             $validated['transcript_file'] = $student->transcript_file;
         }

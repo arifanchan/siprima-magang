@@ -59,15 +59,15 @@ class ProfileEditController extends Controller
         $profile->identity_number = $validated['identity_number'];
         if ($request->hasFile('photo_file')) {
             if ($profile->photo_file) {
-                \Storage::delete('public/users/' . $user->id . '/profile_photos/' . $profile->photo_file);
+                \Storage::delete('public/' . $profile->photo_file);
             }
             $filename = time() . '_' . $request->file('photo_file')->getClientOriginalName();
+            $relativePath = 'users/' . $user->id . '/profile_photos/' . $filename;
             $request->file('photo_file')->storeAs('users/' . $user->id . '/profile_photos', $filename, 'public');
-            $profile->photo_file = $filename;
+            $profile->photo_file = $relativePath;
         }
         $profile->save();
 
         return redirect()->route('profile.show')->with('status', 'Data pribadi berhasil diperbarui.');
     }
 }
-

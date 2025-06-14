@@ -27,17 +27,16 @@ export default function ProfileShow({ user, profile, student, mediaSosial, docum
         { title: 'Profile', href: '/profile' },
     ];
 
-    // Helper untuk path dokumen profile
+    // Helper untuk path dokumen profile (identik dengan documents edit)
     const getProfileFilePath = (file: string|undefined|null, folder = 'profile_photos') => {
         if (!file) return '';
-        if (file.includes('/')) return file;
+        if (file.includes('/')) return `/storage/${file.replace(/^storage\//, '')}`;
         return `/storage/users/${user.id}/${folder}/${file}`;
     };
-
-    // Helper untuk path dokumen student
+    // Helper untuk path dokumen student (identik dengan documents edit)
     const getStudentDocumentPath = (file: string|undefined|null, folder: string) => {
         if (!file) return '';
-        if (file.includes('/')) return file;
+        if (file.includes('/')) return `/storage/${file.replace(/^storage\//, '')}`;
         return `/storage/users/${user.id}/${folder}/${file}`;
     };
 

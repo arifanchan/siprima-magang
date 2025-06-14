@@ -34,10 +34,10 @@ export default function ProfileEdit({ user, profile }: any) {
     const [modalOpen, setModalOpen] = useState(false);
     const [modalFile, setModalFile] = useState<string|null>(null);
 
-    // Helper untuk path dokumen profile (konsisten dengan show.tsx)
+    // Helper untuk path dokumen profile (identik dengan show.tsx)
     const getProfileFilePath = (file: string|undefined|null, folder = 'profile_photos') => {
         if (!file) return '';
-        if (file.includes('/')) return file;
+        if (file.includes('/')) return `/storage/${file.replace(/^storage\//, '')}`;
         return `/storage/users/${user.id}/${folder}/${file}`;
     };
 
