@@ -38,7 +38,8 @@ class EditInternshipApplication extends EditRecord
             $activity->mentor_id = $mentorId;
             $activity->start_date = $record->start_date;
             $activity->end_date = $record->end_date;
-            $activity->status = 'active';
+            // Status tetap 'pending' meskipun mentor sudah ditunjuk
+            $activity->status = 'pending';
             $activity->save();
         }
     }

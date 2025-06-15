@@ -35,5 +35,24 @@ class InternshipActivity extends Model
     {
         return $this->belongsTo(Mentor::class);
     }
-}
 
+    public function presences()
+    {
+        return $this->hasMany(Presence::class);
+    }
+
+    public function logbooks()
+    {
+        return $this->hasMany(Logbook::class);
+    }
+
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class);
+    }
+
+    public function finalAssessment()
+    {
+        return $this->hasOne(FinalAssessment::class);
+    }
+}
