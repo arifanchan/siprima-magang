@@ -29,7 +29,12 @@ class LogbookResource extends Resource
                     ->required(),
                 Forms\Components\Select::make('assignment_id')
                     ->label('Assignment')
-                    ->relationship('assignment', 'title')
+                    ->options(function ($get) {
+                        $activityId = $get('internship_activity_id');
+                        if (!$activityId) return [];
+                        return \App\Models\Assignment::where('internship_activity_id', $activityId)
+                            ->pluck('title', 'id');
+                    })
                     ->searchable(),
                 Forms\Components\DatePicker::make('date')->label('Date')->required(),
                 Forms\Components\TextInput::make('activity')->label('Activity')->required(),
