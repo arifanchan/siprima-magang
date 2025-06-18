@@ -1,101 +1,147 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import Heading from '@/components/heading';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import React from 'react';
 
-const breadcrumbs = (activity: any): BreadcrumbItem[] => [
-    { title: 'Aktivitas Magang', href: '/internship-activities' },
-    { title: `Detail #${activity?.id || ''}`, href: '#' },
+const internshipNavItems = [
+  { key: 'index', title: 'Daftar Aktivitas', href: '/internship-activities' },
+  { key: 'presence', title: 'Presensi', href: '#' },
+  { key: 'logbook', title: 'Logbook Harian', href: '#' },
+  { key: 'assignments', title: 'Tugas dari Mentor', href: '#' },
+  { key: 'final-report', title: 'Laporan Akhir', href: '#' },
+  { key: 'assessment', title: 'Penilaian & Sertifikat', href: '#' },
+  { key: 'feedback', title: 'Feedback/Notifikasi', href: '#' },
 ];
 
 export default function InternshipActivityDetailPage() {
-    // Ambil data detail aktivitas magang dari props Inertia (dummy/mock untuk awal)
-    const { internshipActivity } = usePage().props as any;
-    if (!internshipActivity) {
-        return <div className="p-8 text-center text-gray-500">Aktivitas magang tidak ditemukan.</div>;
-    }
-    return (
-        <AppLayout breadcrumbs={breadcrumbs(internshipActivity)}>
-            <Head title={`Detail Aktivitas Magang #${internshipActivity.id}`} />
-            <div className="flex flex-col gap-4 p-4">
-                <h1 className="text-2xl font-bold mb-2">Detail Aktivitas Magang</h1>
-                <div className="grid md:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-white dark:bg-gray-900">
-                        <div className="font-semibold mb-1">Periode</div>
-                        <div>{internshipActivity.start_date} - {internshipActivity.end_date}</div>
-                        <div className="font-semibold mt-3 mb-1">Mentor</div>
-                        <div>{internshipActivity.mentor_name}</div>
-                        <div className="font-semibold mt-3 mb-1">Status</div>
-                        <div className="capitalize">{internshipActivity.status}</div>
-                    </div>
-                    <div className="p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-white dark:bg-gray-900">
-                        <div className="font-semibold mb-1">Progress</div>
-                        <div className="mb-2 text-sm">Kehadiran: {internshipActivity.presence_percent || 0}%</div>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-2">
-                            <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${internshipActivity.presence_percent || 0}%` }}></div>
-                        </div>
-                        <div className="mb-2 text-sm">Logbook: {internshipActivity.logbook_percent || 0}%</div>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-2">
-                            <div className="bg-green-600 h-2.5 rounded-full" style={{ width: `${internshipActivity.logbook_percent || 0}%` }}></div>
-                        </div>
-                        <div className="mb-2 text-sm">Tugas: {internshipActivity.assignment_percent || 0}%</div>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                            <div className="bg-yellow-500 h-2.5 rounded-full" style={{ width: `${internshipActivity.assignment_percent || 0}%` }}></div>
-                        </div>
-                    </div>
+  const { internshipActivity, today_assignments } = usePage().props as any;
+  // UI/UX: Stepper & aksi hari ini
+  const today = new Date().toISOString().slice(0, 10);
+  const hasCheckedIn = internshipActivity.today_presence?.check_in;
+  const hasCheckedOut = internshipActivity.today_presence?.check_out;
+  const hasLogbook = internshipActivity.today_logbook;
+  return (
+    <AppLayout breadcrumbs={[
+      { title: 'Dashboard', href: '/dashboard' },
+      { title: 'Aktivitas Magang', href: '/internship-activities' },
+      { title: `Detail #${internshipActivity.id}` }
+    ]}>
+      <div className="px-4 py-6">
+        <Heading title="Beranda Kegiatan Magang" description="Pantau dan lakukan aktivitas magang harian Anda di sini." />
+        <div className="flex flex-col lg:flex-row lg:space-x-12 mb-8">
+          <aside className="w-full max-w-xl lg:w-48 mb-8 lg:mb-0">
+            <nav className="flex flex-col space-y-1 space-x-0">
+              {internshipNavItems.map((item) => (
+                <Button
+                  key={item.key}
+                  size="sm"
+                  variant="ghost"
+                  asChild
+                  className="w-full justify-start"
+                >
+                  <Link href={item.href}>{item.title}</Link>
+                </Button>
+              ))}
+            </nav>
+          </aside>
+          <main className="flex-1">
+            {/* Stepper/Progress Hari Ini */}
+            <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4">
+              <div className="flex-1 flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex flex-col items-center">
+                  <div className={`rounded-full w-10 h-10 flex items-center justify-center text-lg font-bold border-2 ${hasCheckedIn ? 'border-green-500 bg-green-100' : 'border-gray-300 bg-gray-50'}`}>1</div>
+                  <div className="text-xs mt-1">Presensi Masuk</div>
                 </div>
-                {/* Aksi dan navigasi fitur */}
-                <div className="mt-6 grid gap-4 md:grid-cols-4">
-                    <a href={`/internship-activities/${internshipActivity.id}/presence`} className="block p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-blue-50 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-center font-semibold hover:bg-blue-100 dark:hover:bg-blue-800 transition">Presensi</a>
-                    <a href={`/internship-activities/${internshipActivity.id}/logbook`} className="block p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-green-50 dark:bg-green-900 text-green-800 dark:text-green-200 text-center font-semibold hover:bg-green-100 dark:hover:bg-green-800 transition">Logbook</a>
-                    <a href={`/internship-activities/${internshipActivity.id}/assignments`} className="block p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-yellow-50 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-center font-semibold hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">Tugas</a>
-                    <a href={`/internship-activities/${internshipActivity.id}/report`} className="block p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-purple-50 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-center font-semibold hover:bg-purple-100 dark:hover:bg-purple-800 transition">Upload Laporan</a>
+                <div className="h-1 w-8 bg-gray-300 md:rotate-0 md:w-8 md:h-1" />
+                <div className="flex flex-col items-center">
+                  <div className={`rounded-full w-10 h-10 flex items-center justify-center text-lg font-bold border-2 ${hasCheckedIn ? 'border-blue-500 bg-blue-100' : 'border-gray-300 bg-gray-50'}`}>2</div>
+                  <div className="text-xs mt-1">Kerjakan Tugas</div>
                 </div>
-                {/* Riwayat aktivitas dan jadwal */}
-                <div className="mt-6 grid gap-4 md:grid-cols-2">
-                    <div className="p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-white dark:bg-gray-900">
-                        <div className="text-lg font-semibold mb-2">Riwayat Aktivitas Terakhir</div>
-                        {internshipActivity.recent_activities && internshipActivity.recent_activities.length > 0 ? (
-                            <ul className="list-disc ml-5 text-sm">
-                                {internshipActivity.recent_activities.map((item: any, idx: number) => (
-                                    <li key={idx}>{item}</li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <div className="text-sm text-gray-500">Belum ada aktivitas terbaru</div>
-                        )}
-                    </div>
-                    <div className="p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-white dark:bg-gray-900">
-                        <div className="text-lg font-semibold mb-2">Jadwal & Kalender Magang</div>
-                        {internshipActivity.schedule && internshipActivity.schedule.length > 0 ? (
-                            <ul className="list-disc ml-5 text-sm">
-                                {internshipActivity.schedule.map((item: any, idx: number) => (
-                                    <li key={idx}>{item}</li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <div className="text-sm text-gray-500">Belum ada jadwal magang</div>
-                        )}
-                    </div>
+                <div className="h-1 w-8 bg-gray-300 md:rotate-0 md:w-8 md:h-1" />
+                <div className="flex flex-col items-center">
+                  <div className={`rounded-full w-10 h-10 flex items-center justify-center text-lg font-bold border-2 ${hasLogbook ? 'border-yellow-500 bg-yellow-100' : 'border-gray-300 bg-gray-50'}`}>3</div>
+                  <div className="text-xs mt-1">Isi Logbook</div>
                 </div>
-                {/* Download dokumen */}
-                <div className="mt-6 p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-white dark:bg-gray-900">
-                    <div className="text-lg font-semibold mb-2">Download Dokumen</div>
-                    {(internshipActivity.completion_letter || internshipActivity.completion_certificate) ? (
-                        <div className="flex flex-col gap-2">
-                            {internshipActivity.completion_letter && (
-                                <a href={internshipActivity.completion_letter} className="text-blue-600 hover:underline" download>Surat Keterangan Selesai</a>
-                            )}
-                            {internshipActivity.completion_certificate && (
-                                <a href={internshipActivity.completion_certificate} className="text-green-600 hover:underline" download>Sertifikat Magang</a>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="text-sm text-gray-500">Belum ada dokumen yang bisa diunduh</div>
-                    )}
+                <div className="h-1 w-8 bg-gray-300 md:rotate-0 md:w-8 md:h-1" />
+                <div className="flex flex-col items-center">
+                  <div className={`rounded-full w-10 h-10 flex items-center justify-center text-lg font-bold border-2 ${hasCheckedOut ? 'border-green-500 bg-green-100' : 'border-gray-300 bg-gray-50'}`}>4</div>
+                  <div className="text-xs mt-1">Presensi Keluar</div>
                 </div>
+              </div>
             </div>
-        </AppLayout>
-    );
+            {/* Aksi Hari Ini */}
+            <div className="mb-8 grid gap-4 md:grid-cols-4">
+              <Button asChild disabled={hasCheckedIn} className="w-full">
+                <Link href={`/internship-activities/${internshipActivity.id}/presence`}>{hasCheckedIn ? 'Sudah Presensi Masuk' : 'Presensi Masuk'}</Link>
+              </Button>
+              <Button asChild className="w-full" variant={hasCheckedIn ? 'default' : 'outline'} disabled={!hasCheckedIn}>
+                <Link href={`/internship-activities/${internshipActivity.id}/assignments`}>Lihat & Kerjakan Tugas</Link>
+              </Button>
+              <Button asChild className="w-full" variant={hasCheckedIn ? 'default' : 'outline'} disabled={!hasCheckedIn}>
+                <Link href={`/internship-activities/${internshipActivity.id}/logbook`}>{hasLogbook ? 'Lihat Logbook' : 'Isi Logbook'}</Link>
+              </Button>
+              <Button asChild className="w-full" disabled={!hasCheckedIn || hasCheckedOut}>
+                <Link href={`/internship-activities/${internshipActivity.id}/presence`}>{hasCheckedOut ? 'Sudah Presensi Keluar' : 'Presensi Keluar'}</Link>
+              </Button>
+            </div>
+            {/* Ringkasan Aktivitas Hari Ini */}
+            <Card className="mb-8 p-6">
+              <h2 className="font-semibold text-lg mb-4">Ringkasan Aktivitas Hari Ini</h2>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <div>Tanggal</div>
+                <div>{today}</div>
+                <div>Presensi Masuk</div>
+                <div>{internshipActivity.today_presence?.check_in || '-'}</div>
+                <div>Presensi Keluar</div>
+                <div>{internshipActivity.today_presence?.check_out || '-'}</div>
+                <div>Tugas</div>
+                <div>
+                  {today_assignments && today_assignments.length > 0
+                    ? `${today_assignments.filter((t:any) => t.status === 'completed').length}/${today_assignments.length}`
+                    : '0/0'}
+                </div>
+                <div>Logbook</div>
+                <div>{hasLogbook ? 'Sudah diisi' : 'Belum diisi'}</div>
+              </div>
+            </Card>
+            <div className="grid md:grid-cols-2 gap-2 mb-6">
+              <Card className="p-6">
+                <h2 className="font-semibold text-lg mb-4">Periode Magang</h2>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div>Periode</div>
+                  <div>{internshipActivity.start_date} - {internshipActivity.end_date}</div>
+                  <div>Mentor</div>
+                  <div>{internshipActivity.mentor_name || internshipActivity.mentor?.user?.name || 'Belum Ditentukan'}</div>
+                  <div>Status</div>
+                  <div className="capitalize">
+                    <span className={`inline-block px-2 py-1 rounded text-xs font-semibold
+                      ${internshipActivity.status === 'active' ? 'bg-green-100 text-green-800' : ''}
+                      ${internshipActivity.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : ''}
+                      ${internshipActivity.status === 'completed' ? 'bg-blue-100 text-blue-800' : ''}
+                      ${internshipActivity.status === 'canceled' ? 'bg-red-100 text-red-800' : ''}
+                    `}>{internshipActivity.status}</span>
+                  </div>
+                </div>
+              </Card>
+              <Card className="p-6">
+                <h2 className="font-semibold text-lg mb-4">Dokumen</h2>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div>Laporan Akhir</div>
+                  <div>{internshipActivity.final_report ? <a href={internshipActivity.final_report} target="_blank" rel="noopener noreferrer" className="text-blue-500">Lihat</a> : 'Belum diunggah'}</div>
+                  <div>Surat Keterangan</div>
+                  <div>{internshipActivity.completion_letter ? <a href={internshipActivity.completion_letter} target="_blank" rel="noopener noreferrer" className="text-blue-500">Lihat</a> : 'Belum diunggah'}</div>
+                  <div>Sertifikat</div>
+                  <div>{internshipActivity.completion_certificate ? <a href={internshipActivity.completion_certificate} target="_blank" rel="noopener noreferrer" className="text-blue-500">Lihat</a> : 'Belum diunggah'}</div>
+                </div>
+              </Card>
+            </div>
+          </main>
+        </div>
+      </div>
+    </AppLayout>
+  );
 }
+
 

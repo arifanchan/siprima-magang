@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DocumentEditController;
+use App\Http\Controllers\InternshipActivityController;
 use App\Http\Controllers\InternshipApplicationController;
 use App\Http\Controllers\MediaSosialEditController;
 use App\Http\Controllers\StudentEditController;
@@ -30,6 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/documents/edit', [DocumentEditController::class, 'edit'])->name('profile.documents.edit');
     Route::post('/profile/documents/edit', [DocumentEditController::class, 'update'])->name('profile.documents.update');
     Route::resource('internship-applications', InternshipApplicationController::class)->only(['index', 'show', 'create', 'store']);
+    Route::resource('internship-activities', InternshipActivityController::class)->only(['index', 'show']);
 });
 
 require __DIR__.'/settings.php';

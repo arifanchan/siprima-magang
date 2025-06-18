@@ -183,3 +183,6 @@ export default function InternshipApplicationShow({ user, profile, student, appl
     </AppLayout>
   );
 }
+
+
+

@@ -1,5 +1,12 @@
+<?php
 
+namespace App\Http\Controllers;
 
+use App\Models\Assignment;
+use Illuminate\Http\Request;
+
+class AssignmentController extends Controller
+{
     // Edit assignment
     public function update(Request $request, $id)
     {
@@ -14,5 +21,6 @@
         $assignment = Assignment::findOrFail($id);
         $assignment->delete();
         return redirect()->back()->with('status', 'Tugas berhasil dihapus.');
+
     }
 }

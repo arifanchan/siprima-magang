@@ -42,5 +42,14 @@ class EditInternshipApplication extends EditRecord
             $activity->status = 'pending';
             $activity->save();
         }
+
+        // Jika permohonan magang disetujui, ubah role user menjadi 'student'
+        if ($record->status === 'approved') {
+            $student = $record->student;
+            if ($student && $student->user) {
+                $student->user->update(['role' => 'student']);
+            }
+        }
     }
 }
+

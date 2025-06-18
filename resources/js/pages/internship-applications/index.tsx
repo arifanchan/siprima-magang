@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
 import { Card } from '@/components/ui/card';
 import Heading from "@/components/heading";
+import dayjs from 'dayjs';
 
 const internshipNavItems = [
   { title: 'Riwayat Pengajuan', key: 'index', href: '/internship-applications' },
@@ -111,11 +112,19 @@ export default function InternshipApplicationsIndex({ applications = [], user, p
                     ) : (
                       applications.map((app: any, i: number) => (
                         <tr key={app.id}>
-                          <td className="border px-2 py-1">{i+1}</td>
-                          <td className="border px-2 py-1">{app.created_at}</td>
-                          <td className="border px-2 py-1">{app.status}</td>
-                          <td className="border px-2 py-1">
-                            <Link href={`/internship-applications/${app.id}`} className="btn btn-sm btn-info">Lihat</Link>
+                          <td className="border px-4 py-2 text-sm text-center">{i+1}</td>
+                          <td className="border px-4 py-2 text-sm text-center">{dayjs(app.created_at).format('DD MMMM YYYY')}</td>
+                          <td className="px-4 py-2 border capitalize text-sm text-center">
+                            <span className={`inline-block px-2 py-1 rounded text-xs font-semibold
+                                ${app.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : ''}
+                                ${app.status === 'approved' ? 'bg-green-100 text-green-800' : ''}
+                                ${app.status === 'rejected' ? 'bg-red-100 text-red-800' : ''}
+                            `}>
+                                {app.status}
+                            </span>
+                          </td>
+                          <td className="border px-4 py-2 text-sm text-center">
+                            <Link href={`/internship-applications/${app.id}`} className="ttext-primary underline hover:text-primary focus:text-primary transition-colors">Lihat</Link>
                           </td>
                         </tr>
                       ))

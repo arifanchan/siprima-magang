@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('activity');
             $table->text('description');
             $table->text('progress')->nullable();
-            $table->string('evidence_harian')->nullable();
+            $table->string('eviden_harian')->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->text('feedback')->nullable();
             $table->string('dss_status')->nullable();
@@ -33,4 +33,3 @@ return new class extends Migration
         Schema::dropIfExists('logbooks');
     }
 };
-

@@ -54,10 +54,7 @@ class InternshipActivityResource extends Resource
                             : 'users/unknown/internship/final_reports'
                     )
                     ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
-                        $userId = $record && $record->internshipApplication && $record->internshipApplication->student
-                            ? $record->internshipApplication->student->user_id
-                            : 'unknown';
-                        return time() . '_' . $file->getClientOriginalName();
+                        return now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
                     })
                     ->downloadable(true)
                     ->previewable(true),
@@ -70,10 +67,7 @@ class InternshipActivityResource extends Resource
                             : 'users/unknown/internship/completion_letters'
                     )
                     ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
-                        $userId = $record && $record->internshipApplication && $record->internshipApplication->student
-                            ? $record->internshipApplication->student->user_id
-                            : 'unknown';
-                        return time() . '_' . $file->getClientOriginalName();
+                        return now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
                     })
                     ->downloadable(true)
                     ->previewable(true),
@@ -86,10 +80,7 @@ class InternshipActivityResource extends Resource
                             : 'users/unknown/internship/completion_certificates'
                     )
                     ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
-                        $userId = $record && $record->internshipApplication && $record->internshipApplication->student
-                            ? $record->internshipApplication->student->user_id
-                            : 'unknown';
-                        return time() . '_' . $file->getClientOriginalName();
+                        return now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
                     })
                     ->downloadable(true)
                     ->previewable(true),

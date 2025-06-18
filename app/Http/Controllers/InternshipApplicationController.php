@@ -59,13 +59,28 @@ class InternshipApplicationController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
+
+        // Validasi apakah user sudah memiliki pengajuan aktif
+        $existingApplication = InternshipApplication::where('student_id', $user->student->id)
+            ->whereIn('status', ['pending', 'approved'])
+            ->where(function ($query) use ($request) {
+                $query->whereBetween('start_date', [$request->start_date, $request->end_date])
+                      ->orWhereBetween('end_date', [$request->start_date, $request->end_date]);
+            })
+            ->first();
+
+        if ($existingApplication) {
+            return redirect()->back()->withErrors(['error' => 'Anda sudah memiliki pengajuan aktif dalam periode ini.']);
+        }
+
+        // Lanjutkan menyimpan pengajuan baru
         $validated = $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'letter_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'cv_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'other_supporting_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'description' => 'nullable|string',
+            'application_letter' => 'nullable|file|mimes:pdf|max:2048',
+            'cv_file' => 'nullable|file|mimes:pdf|max:2048',
+            'other_supporting_documents.*' => 'nullable|file|mimes:pdf|max:2048',
         ]);
 
         // Handle file uploads per user

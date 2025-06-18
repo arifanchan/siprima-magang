@@ -17,7 +17,7 @@ class Logbook extends Model
         'activity',
         'description',
         'progress',
-        'evidence_harian',
+        'evidence_harian', // Changed back to original field name
         'status',
         'feedback',
         'dss_status',
@@ -36,4 +36,3 @@ class Logbook extends Model
         return $this->belongsTo(Assignment::class);
     }
 }
-

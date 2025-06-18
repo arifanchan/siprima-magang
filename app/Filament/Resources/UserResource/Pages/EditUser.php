@@ -12,45 +12,35 @@ class EditUser extends EditRecord
     {
         parent::fillForm();
         $user = $this->record->fresh(['profile', 'mediaSosial', 'student', 'mentor', 'admin']);
+
         $data = [
             'name' => $user->name,
             'email' => $user->email,
             'phone' => $user->phone,
             'role' => $user->role,
         ];
+
         // Profile
-        foreach ([
-            'gender', 'birth_date', 'address', 'occupation', 'identity_number', 'photo_file',
-            'dss_status', 'dss_score', 'dss_recommendation', 'dss_notes',
-        ] as $field) {
-            $data['profile'][$field] = $user->profile->{$field} ?? '';
-        }
+        $data['profile'] = $user->profile ? $user->profile->toArray() : [];
+
         // Media Sosial
-        foreach ([
-            'instagram', 'facebook', 'x', 'youtube', 'linkedin', 'tiktok', 'thread',
-        ] as $field) {
-            $data['mediaSosial'][$field] = $user->mediaSosial->{$field} ?? '';
-        }
+        $data['mediaSosial'] = $user->mediaSosial ? $user->mediaSosial->toArray() : [];
+
         // Student
-        foreach ([
-            'student_number', 'study_program', 'faculty', 'university', 'entry_year', 'semester_or_grade',
-            'latest_academic_score', 'bio', 'ktp_file', 'ktm_or_student_card_file', 'transcript_file',
-            'advisor_name', 'advisor_phone', 'dss_status', 'dss_score', 'dss_recommendation', 'dss_notes',
-        ] as $field) {
-            $data['student'][$field] = $user->student->{$field} ?? '';
+        if (in_array($user->role, ['student', 'user'])) {
+            $data['student'] = $user->student ? $user->student->toArray() : [];
         }
+
         // Mentor
-        foreach ([
-            'nip', 'division', 'expertise', 'position', 'bio', 'dss_status', 'dss_score', 'dss_recommendation', 'dss_notes',
-        ] as $field) {
-            $data['mentor'][$field] = $user->mentor->{$field} ?? '';
+        if ($user->role === 'mentor') {
+            $data['mentor'] = $user->mentor ? $user->mentor->toArray() : [];
         }
+
         // Admin
-        foreach ([
-            'nip', 'division', 'position', 'bio',
-        ] as $field) {
-            $data['admin'][$field] = $user->admin->{$field} ?? '';
+        if ($user->role === 'admin') {
+            $data['admin'] = $user->admin ? $user->admin->toArray() : [];
         }
+
         $this->form->fill($data);
     }
 

@@ -45,14 +45,11 @@ class LogbookResource extends Resource
                     ->disk('public')
                     ->directory(fn ($get, $state, $record = null) =>
                         $record && $record->internshipActivity && $record->internshipActivity->internshipApplication && $record->internshipActivity->internshipApplication->student
-                            ? 'users/' . $record->internshipActivity->internshipApplication->student->user_id . '/internship/logbook_evidence'
-                            : 'users/unknown/internship/logbook_evidence'
+                            ? 'users/' . $record->internshipActivity->internshipApplication->student->user_id . '/internship/logbook'
+                            : 'users/unknown/internship/logbooks'
                     )
                     ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
-                        $userId = $record && $record->internshipActivity && $record->internshipActivity->internshipApplication && $record->internshipActivity->internshipApplication->student
-                            ? $record->internshipActivity->internshipApplication->student->user_id
-                            : 'unknown';
-                        return time() . '_' . $file->getClientOriginalName();
+                        return now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
                     })
                     ->downloadable(true)
                     ->previewable(true),
