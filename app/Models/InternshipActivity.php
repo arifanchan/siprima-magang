@@ -15,6 +15,7 @@ class InternshipActivity extends Model
         'mentor_id',
         'start_date',
         'end_date',
+        'final_presentation',
         'final_report',
         'completion_letter',
         'completion_certificate',

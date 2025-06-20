@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileEditController;
+use App\Http\Controllers\PresenceController;
+use App\Http\Controllers\AssignmentController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -32,6 +34,20 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/documents/edit', [DocumentEditController::class, 'update'])->name('profile.documents.update');
     Route::resource('internship-applications', InternshipApplicationController::class)->only(['index', 'show', 'create', 'store']);
     Route::resource('internship-activities', InternshipActivityController::class)->only(['index', 'show']);
+    Route::resource('assignments', AssignmentController::class);
+    Route::post('/presences/check-in', [PresenceController::class, 'checkIn'])->name('presences.check-in');
+    Route::post('/presences/check-out', [PresenceController::class, 'checkOut'])->name('presences.check-out');
+    // Sub-routes for internship-activities detail navigation
+    Route::get('/internship-activities/{id}/presence', function ($id) {
+        $activity = \App\Models\InternshipActivity::with(['mentor.user'])->findOrFail($id);
+        $presences = \App\Models\Presence::where('internship_activity_id', $id)->orderByDesc('date')->get();
+        return Inertia::render('internship-activities/[id]/presence', [
+            'internshipActivity' => $activity,
+            'presences' => $presences,
+        ]);
+    })->name('internship-activities.presence');
+    Route::get('/internship-activities/{id}/assignments', [AssignmentController::class, 'activityAssignments'])->name('internship-activities.assignments');
+
 });
 
 require __DIR__.'/settings.php';

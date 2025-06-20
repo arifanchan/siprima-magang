@@ -84,20 +84,20 @@ class InternshipApplicationController extends Controller
         ]);
 
         // Handle file uploads per user
-        $letterFilename = time() . '_' . $request->file('letter_file')->getClientOriginalName();
+        $letterFilename = now()->format('Y-m-d') . '_' . $request->file('letter_file')->getClientOriginalName();
         $letterRelativePath = 'users/' . $user->id . '/internship/application_letters/' . $letterFilename;
         $request->file('letter_file')->storeAs('users/' . $user->id . '/internship/application_letters', $letterFilename, 'public');
         $cvFilename = null;
         $cvRelativePath = null;
         if ($request->file('cv_file')) {
-            $cvFilename = time() . '_' . $request->file('cv_file')->getClientOriginalName();
+            $cvFilename = now()->format('Y-m-d') . '_' . $request->file('cv_file')->getClientOriginalName();
             $cvRelativePath = 'users/' . $user->id . '/internship/cv/' . $cvFilename;
             $request->file('cv_file')->storeAs('users/' . $user->id . '/internship/cv', $cvFilename, 'public');
         }
         $otherDocs = [];
         if ($request->hasFile('other_supporting_documents')) {
             foreach ($request->file('other_supporting_documents') as $file) {
-                $filename = time() . '_' . $file->getClientOriginalName();
+                $filename = now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
                 $relativePath = 'users/' . $user->id . '/internship/supporting_documents/' . $filename;
                 $file->storeAs('users/' . $user->id . '/internship/supporting_documents', $filename, 'public');
                 $otherDocs[] = $relativePath;

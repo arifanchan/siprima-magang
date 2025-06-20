@@ -56,9 +56,9 @@ class UserResource extends Resource
                         ->previewable(true)
                         ->visibility('public')
                         ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
-                            return time() . '_' . $file->getClientOriginalName();
+                            return now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
                         })
-                        ->preserveFilenames(false)
+                        ->preserveFilenames()
                         ->image()
                         ->maxSize(2048),
                     // Media Sosial fields
@@ -83,25 +83,32 @@ class UserResource extends Resource
                             ->previewable(true)
                             ->downloadable(true)
                             ->preserveFilenames()
-                            ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
+                            ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
+                                return now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
+                            })
                             ->dehydrateStateUsing(fn ($state) => $state)
                             ->default(fn ($record) => is_array($record?->student?->ktp_file) ? array_values($record->student->ktp_file)[0] ?? null : $record?->student?->ktp_file),
                         Forms\Components\FileUpload::make('student.ktm_or_student_card_file')->label('KTM/Student Card')
                             ->previewable(true)
                             ->downloadable(true)
                             ->preserveFilenames()
-                            ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
+                            ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
+                                return now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
+                            })
                             ->dehydrateStateUsing(fn ($state) => $state)
                             ->default(fn ($record) => is_array($record?->student?->ktm_or_student_card_file) ? array_values($record->student->ktm_or_student_card_file)[0] ?? null : $record?->student?->ktm_or_student_card_file),
                         Forms\Components\FileUpload::make('student.transcript_file')->label('Transcript')
                             ->previewable(true)
                             ->downloadable(true)
                             ->preserveFilenames()
-                            ->getUploadedFileNameForStorageUsing(fn ($file) => $file->getClientOriginalName())
+                            ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
+                                return now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
+                            })
                             ->dehydrateStateUsing(fn ($state) => $state)
                             ->default(fn ($record) => is_array($record?->student?->transcript_file) ? array_values($record->student->transcript_file)[0] ?? null : $record?->student?->transcript_file),
                         Forms\Components\TextInput::make('student.advisor_name')->label('Advisor Name')->id('student_advisor_name'),
                         Forms\Components\TextInput::make('student.advisor_phone')->label('Advisor Phone')->id('student_advisor_phone'),
+                        Forms\Components\TextInput::make('student.emergency_contact')->label('Emergency Contact')->id('student_emergency_contact'),
                     ])->visible(fn ($get) => in_array($get('role'), ['student', 'user'])),
                     // Mentor fields (hanya tampil jika role mentor)
                     Forms\Components\Group::make([

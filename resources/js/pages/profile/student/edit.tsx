@@ -27,6 +27,7 @@ export default function StudentEdit({ student }: any) {
         advisor_name: student?.advisor_name || '',
         advisor_phone: student?.advisor_phone || '',
         bio: student?.bio || '',
+        emergency_contact: student?.emergency_contact || '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -102,6 +103,11 @@ export default function StudentEdit({ student }: any) {
                                         <Label htmlFor="advisor_phone">No. HP Pembimbing</Label>
                                         <Input id="advisor_phone" value={data.advisor_phone} onChange={e => setData('advisor_phone', e.target.value)} />
                                         <InputError message={errors.advisor_phone} />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="emergency_contact">Kontak Darurat</Label>
+                                        <Input id="emergency_contact" value={data.emergency_contact} onChange={e => setData('emergency_contact', e.target.value)} />
+                                        <InputError message={errors.emergency_contact} />
                                     </div>
                                     <div className="md:col-span-2">
                                         <Label htmlFor="bio">Bio</Label>

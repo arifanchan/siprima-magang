@@ -4,24 +4,38 @@ import Heading from '@/components/heading';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import React from 'react';
-
-const internshipNavItems = [
-  { key: 'index', title: 'Daftar Aktivitas', href: '/internship-activities' },
-  { key: 'presence', title: 'Presensi', href: '#' },
-  { key: 'logbook', title: 'Logbook Harian', href: '#' },
-  { key: 'assignments', title: 'Tugas dari Mentor', href: '#' },
-  { key: 'final-report', title: 'Laporan Akhir', href: '#' },
-  { key: 'assessment', title: 'Penilaian & Sertifikat', href: '#' },
-  { key: 'feedback', title: 'Feedback/Notifikasi', href: '#' },
-];
+import dayjs from 'dayjs';
+import 'dayjs/locale/id';
+dayjs.locale('id');
 
 export default function InternshipActivityDetailPage() {
-  const { internshipActivity, today_assignments } = usePage().props as any;
+  const { internshipActivity, today_assignments, presences } = usePage().props as any;
   // UI/UX: Stepper & aksi hari ini
-  const today = new Date().toISOString().slice(0, 10);
-  const hasCheckedIn = internshipActivity.today_presence?.check_in;
-  const hasCheckedOut = internshipActivity.today_presence?.check_out;
+  // Coba ambil todayPresence dari props, jika tidak ada, filter dari presences
+  let todayPresence = internshipActivity.today_presence || usePage().props.today_presence || null;
+  // Ambil tanggal hari ini dari todayPresence jika ada, jika tidak pakai tanggal hari ini dari browser
+  const today = todayPresence?.date || new Date().toISOString().slice(0, 10);
+  if (!todayPresence && presences && Array.isArray(presences)) {
+    todayPresence = presences.find((p: any) => p.date === today) || null;
+  }
+  const hasCheckedIn = todayPresence?.check_in;
+  const hasCheckedOut = todayPresence?.check_out;
   const hasLogbook = internshipActivity.today_logbook;
+
+  // Generate dynamic nav items with correct hrefs
+  const navItems = [
+    { key: 'index', title: 'Daftar Aktivitas', href: '/internship-activities' },
+    { key: 'presence', title: 'Presensi', href: `/internship-activities/${internshipActivity.id}/presence` },
+    { key: 'logbook', title: 'Logbook Harian', href: `/internship-activities/${internshipActivity.id}/logbook` },
+    { key: 'assignments', title: 'Tugas dari Mentor', href: `/internship-activities/${internshipActivity.id}/assignments` },
+    { key: 'final-report', title: 'Laporan Akhir', href: `/internship-activities/${internshipActivity.id}/report` },
+    { key: 'assessment', title: 'Penilaian & Sertifikat', href: `/internship-activities/${internshipActivity.id}/final-assessment` },
+    { key: 'feedback', title: 'Feedback/Notifikasi', href: '#' },
+  ];
+
+  // DEBUG: tampilkan isi todayPresence
+  console.log('todayPresence', todayPresence);
+
   return (
     <AppLayout breadcrumbs={[
       { title: 'Dashboard', href: '/dashboard' },
@@ -33,7 +47,7 @@ export default function InternshipActivityDetailPage() {
         <div className="flex flex-col lg:flex-row lg:space-x-12 mb-8">
           <aside className="w-full max-w-xl lg:w-48 mb-8 lg:mb-0">
             <nav className="flex flex-col space-y-1 space-x-0">
-              {internshipNavItems.map((item) => (
+              {navItems.map((item) => (
                 <Button
                   key={item.key}
                   size="sm"
@@ -91,11 +105,11 @@ export default function InternshipActivityDetailPage() {
               <h2 className="font-semibold text-lg mb-4">Ringkasan Aktivitas Hari Ini</h2>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 <div>Tanggal</div>
-                <div>{today}</div>
+                <div>{today ? dayjs(today).format('DD MMMM YYYY') : '-'}</div>
                 <div>Presensi Masuk</div>
-                <div>{internshipActivity.today_presence?.check_in || '-'}</div>
+                <div>{todayPresence?.check_in || '-'}</div>
                 <div>Presensi Keluar</div>
-                <div>{internshipActivity.today_presence?.check_out || '-'}</div>
+                <div>{todayPresence?.check_out || '-'}</div>
                 <div>Tugas</div>
                 <div>
                   {today_assignments && today_assignments.length > 0
@@ -110,8 +124,10 @@ export default function InternshipActivityDetailPage() {
               <Card className="p-6">
                 <h2 className="font-semibold text-lg mb-4">Periode Magang</h2>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                  <div>Periode</div>
-                  <div>{internshipActivity.start_date} - {internshipActivity.end_date}</div>
+                  <div>Tanggal Mulai</div>
+                  <div>{internshipActivity.start_date ? dayjs(internshipActivity.start_date).format('DD MMMM YYYY') : '-'}</div>
+                  <div>Tanggal Selesai</div>
+                  <div>{internshipActivity.end_date ? dayjs(internshipActivity.end_date).format('DD MMMM YYYY') : '-'}</div>
                   <div>Mentor</div>
                   <div>{internshipActivity.mentor_name || internshipActivity.mentor?.user?.name || 'Belum Ditentukan'}</div>
                   <div>Status</div>
@@ -128,6 +144,8 @@ export default function InternshipActivityDetailPage() {
               <Card className="p-6">
                 <h2 className="font-semibold text-lg mb-4">Dokumen</h2>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div>Presentasi Akhir</div>
+                  <div>{internshipActivity.final_presentation ? <a href={internshipActivity.final_presentation} target="_blank" rel="noopener noreferrer" className="text-blue-500">Lihat</a> : 'Belum diunggah'}</div>
                   <div>Laporan Akhir</div>
                   <div>{internshipActivity.final_report ? <a href={internshipActivity.final_report} target="_blank" rel="noopener noreferrer" className="text-blue-500">Lihat</a> : 'Belum diunggah'}</div>
                   <div>Surat Keterangan</div>
@@ -143,5 +161,3 @@ export default function InternshipActivityDetailPage() {
     </AppLayout>
   );
 }
-
-

@@ -25,6 +25,7 @@ class Student extends Model
         'transcript_file',
         'advisor_name',
         'advisor_phone',
+        'emergency_contact',
         'dss_status',
         'dss_score',
         'dss_recommendation',
@@ -36,4 +37,3 @@ class Student extends Model
         return $this->belongsTo(User::class);
     }
 }
-

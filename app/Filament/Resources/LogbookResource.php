@@ -45,7 +45,7 @@ class LogbookResource extends Resource
                     ->disk('public')
                     ->directory(fn ($get, $state, $record = null) =>
                         $record && $record->internshipActivity && $record->internshipActivity->internshipApplication && $record->internshipActivity->internshipApplication->student
-                            ? 'users/' . $record->internshipActivity->internshipApplication->student->user_id . '/internship/logbook'
+                            ? 'users/' . $record->internshipActivity->internshipApplication->student->user_id . '/internship/logbooks'
                             : 'users/unknown/internship/logbooks'
                     )
                     ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {

@@ -42,9 +42,14 @@ class InternshipActivityController extends Controller
             ->findOrFail($id);
         $today = now()->toDateString();
         $todayAssignments = $activity->assignments()->whereDate('due_date', $today)->get();
+        // Ambil semua presences untuk aktivitas magang ini
+        $presences = $activity->presences()->orderBy('date', 'desc')->get();
+        $todayPresence = $activity->presences()->whereDate('date', $today)->first();
         return Inertia::render('internship-activities/[id]', [
             'internshipActivity' => $activity,
             'today_assignments' => $todayAssignments,
+            'presences' => $presences,
+            'today_presence' => $todayPresence,
         ]);
     }
 
@@ -52,6 +57,13 @@ class InternshipActivityController extends Controller
     {
         $activity = InternshipActivity::findOrFail($id);
         $activity->update($request->only(['status', 'mentor_id', 'start_date', 'end_date']));
+
+        if ($request->hasFile('final_presentation')) {
+            $filename = now()->format('Y-m-d') . '_' . $request->file('final_presentation')->getClientOriginalName();
+            $path = $request->file('final_presentation')->storeAs('users/' . $activity->internshipApplication->student->user_id . '/internship/final_presentations', $filename, 'public');
+            $activity->final_presentation = $path;
+            $activity->save();
+        }
 
         if ($request->hasFile('final_report')) {
             $filename = now()->format('Y-m-d') . '_' . $request->file('final_report')->getClientOriginalName();

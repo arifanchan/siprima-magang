@@ -138,6 +138,8 @@ export default function ProfileShow({ user, profile, student, mediaSosial, docum
                                         <div>{student?.advisor_name || '-'}</div>
                                         <div>No. HP Dosen/Wali</div>
                                         <div>{student?.advisor_phone || '-'}</div>
+                                        <div>Kontak Darurat</div>
+                                        <div>{student?.emergency_contact || '-'}</div>
                                     </div>
                                 </Card>
                             </div>

@@ -75,9 +75,9 @@ class InternshipApplicationResource extends Resource
                             ->downloadable(true)
                             ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
                                 $userId = $record?->student?->user_id ?? auth()->id();
-                                return time() . '_' . $file->getClientOriginalName();
+                                return now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
                             })
-                            ->preserveFilenames(false)
+                            ->preserveFilenames()
                             ->maxSize(2048),
                         FileUpload::make('cv_file')
                             ->label('CV')
@@ -86,9 +86,10 @@ class InternshipApplicationResource extends Resource
                             ->previewable(true)
                             ->downloadable(true)
                             ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
-                                return time() . '_' . $file->getClientOriginalName();
+                                $userId = $record?->student?->user_id ?? auth()->id();
+                                return now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
                             })
-                            ->preserveFilenames(false)
+                            ->preserveFilenames()
                             ->maxSize(2048),
                         FileUpload::make('other_supporting_documents')
                             ->label('Other Supporting Documents')
@@ -98,9 +99,10 @@ class InternshipApplicationResource extends Resource
                             ->downloadable(true)
                             ->multiple()
                             ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
-                                return time() . '_' . $file->getClientOriginalName();
+                                $userId = $record?->student?->user_id ?? auth()->id();
+                                return now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
                             })
-                            ->preserveFilenames(false)
+                            ->preserveFilenames()
                             ->maxSize(2048),
                         // ...existing code...
                     ]),

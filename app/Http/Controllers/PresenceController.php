@@ -40,4 +40,51 @@ class PresenceController extends Controller
         $presence->delete();
         return redirect()->back()->with('status', 'Presensi berhasil dihapus.');
     }
+
+    public function checkIn(Request $request)
+    {
+        $user = $request->user();
+        $activityId = $request->input('internship_activity_id');
+        $today = now()->toDateString();
+        $currentTime = now()->format('H:i');
+        if ($currentTime < '06:00' || $currentTime > '18:00') {
+            return redirect()->back()->withErrors(['check_in' => 'Check-in hanya dapat dilakukan antara pukul 06:00 hingga 18:00.']);
+        }
+        $presence = Presence::firstOrCreate([
+            'internship_activity_id' => $activityId,
+            'date' => $today,
+        ]);
+        if ($presence->check_in) {
+            return redirect()->back()->withErrors(['check_in' => 'Anda sudah melakukan presensi masuk hari ini.']);
+        }
+        $presence->check_in = $currentTime;
+        $presence->save();
+        // Redirect ke halaman detail magang agar data presensi hari ini langsung ter-refresh
+        return redirect()->route('internship-activities.show', ['internship_activity' => $activityId])->with('status', 'Presensi masuk berhasil.');
+    }
+
+    public function checkOut(Request $request)
+    {
+        $user = $request->user();
+        $activityId = $request->input('internship_activity_id');
+        $today = now()->toDateString();
+        $currentTime = now()->format('H:i');
+        if ($currentTime < '06:00' || $currentTime > '18:00') {
+            return redirect()->back()->withErrors(['check_out' => 'Check-out hanya dapat dilakukan antara pukul 06:00 hingga 18:00.']);
+        }
+        $presence = Presence::where([
+            ['internship_activity_id', '=', $activityId],
+            ['date', '=', $today],
+        ])->first();
+        if (!$presence || !$presence->check_in) {
+            return redirect()->back()->withErrors(['check_out' => 'Anda belum melakukan presensi masuk hari ini.']);
+        }
+        if ($presence->check_out) {
+            return redirect()->back()->withErrors(['check_out' => 'Anda sudah melakukan presensi keluar hari ini.']);
+        }
+        $presence->check_out = $currentTime;
+        $presence->save();
+        // Redirect ke halaman detail magang agar data presensi hari ini langsung ter-refresh
+        return redirect()->route('internship-activities.show', ['internship_activity' => $activityId])->with('status', 'Presensi keluar berhasil.');
+    }
 }

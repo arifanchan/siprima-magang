@@ -61,7 +61,7 @@ class ProfileEditController extends Controller
             if ($profile->photo_file) {
                 \Storage::delete('public/' . $profile->photo_file);
             }
-            $filename = time() . '_' . $request->file('photo_file')->getClientOriginalName();
+            $filename = now()->format('Y-m-d') . '_' . $request->file('photo_file')->getClientOriginalName();
             $relativePath = 'users/' . $user->id . '/profile_photos/' . $filename;
             $request->file('photo_file')->storeAs('users/' . $user->id . '/profile_photos', $filename, 'public');
             $profile->photo_file = $relativePath;

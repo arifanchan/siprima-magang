@@ -31,7 +31,7 @@ class DocumentEditController extends Controller
             if ($student->ktp_file) {
                 \Storage::delete('public/' . $student->ktp_file);
             }
-            $filename = time() . '_' . $request->file('ktp_file')->getClientOriginalName();
+            $filename = now()->format('Y-m-d') . '_' . $request->file('ktp_file')->getClientOriginalName();
             $relativePath = 'users/' . $user->id . '/ktp/' . $filename;
             $request->file('ktp_file')->storeAs('users/' . $user->id . '/ktp', $filename, 'public');
             $validated['ktp_file'] = $relativePath;
@@ -42,7 +42,7 @@ class DocumentEditController extends Controller
             if ($student->ktm_or_student_card_file) {
                 \Storage::delete('public/' . $student->ktm_or_student_card_file);
             }
-            $filename = time() . '_' . $request->file('ktm_or_student_card_file')->getClientOriginalName();
+            $filename = now()->format('Y-m-d') . '_' . $request->file('ktm_or_student_card_file')->getClientOriginalName();
             $relativePath = 'users/' . $user->id . '/ktm/' . $filename;
             $request->file('ktm_or_student_card_file')->storeAs('users/' . $user->id . '/ktm', $filename, 'public');
             $validated['ktm_or_student_card_file'] = $relativePath;
@@ -53,7 +53,7 @@ class DocumentEditController extends Controller
             if ($student->transcript_file) {
                 \Storage::delete('public/' . $student->transcript_file);
             }
-            $filename = time() . '_' . $request->file('transcript_file')->getClientOriginalName();
+            $filename = now()->format('Y-m-d') . '_' . $request->file('transcript_file')->getClientOriginalName();
             $relativePath = 'users/' . $user->id . '/transcript/' . $filename;
             $request->file('transcript_file')->storeAs('users/' . $user->id . '/transcript', $filename, 'public');
             $validated['transcript_file'] = $relativePath;

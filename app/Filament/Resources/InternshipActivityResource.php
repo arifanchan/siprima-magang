@@ -45,6 +45,19 @@ class InternshipActivityResource extends Resource
                     ->required(),
                 Forms\Components\DatePicker::make('start_date')->label('Start Date')->required(),
                 Forms\Components\DatePicker::make('end_date')->label('End Date')->required(),
+                Forms\Components\FileUpload::make('final_presentation')
+                    ->label('Final Presentation')
+                    ->disk('public')
+                    ->directory(fn ($get, $state, $record = null) =>
+                        $record && $record->internshipApplication && $record->internshipApplication->student
+                            ? 'users/' . $record->internshipApplication->student->user_id . '/internship/final_presentations'
+                            : 'users/unknown/internship/final_presentations'
+                    )
+                    ->getUploadedFileNameForStorageUsing(function ($file, $get, $set, $record) {
+                        return now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
+                    })
+                    ->preserveFilenames()
+                    ->maxSize(10240),
                 Forms\Components\FileUpload::make('final_report')
                     ->label('Final Report')
                     ->disk('public')

@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('mentor_id')->nullable()->constrained('mentors')->onDelete('set null');
             $table->date('start_date')->nullable(); // Added start_date for activity
             $table->date('end_date')->nullable();   // Added end_date for activity
+            $table->text('final_presentation')->nullable()
             $table->text('final_report')->nullable();
             $table->string('completion_letter')->nullable();
             $table->string('completion_certificate')->nullable();

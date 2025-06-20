@@ -28,7 +28,19 @@ class LogbookController extends Controller
             return redirect()->back()->withErrors(['date' => 'Logbook tidak dapat diisi untuk tanggal ke depan.']);
         }
 
+        // Handle file upload for evidence_harian
+        if ($request->hasFile('evidence_harian')) {
+            $user = $request->user();
+            if ($logbook->evidence_harian) {
+                \Storage::delete('public/' . $logbook->evidence_harian);
+            }
+            $filename = now()->format('Y-m-d') . '_' . $request->file('evidence_harian')->getClientOriginalName();
+            $relativePath = 'users/' . $user->id . '/internship/logbooks/' . $filename;
+            $request->file('evidence_harian')->storeAs('users/' . $user->id . '/internship/logbooks', $filename, 'public');
+            $logbook->evidence_harian = $relativePath;
+        }
         $logbook->update($request->only(['activity', 'description', 'progress', 'status']));
+        $logbook->save();
         return redirect()->back()->with('status', 'Logbook berhasil diupdate.');
     }
 
