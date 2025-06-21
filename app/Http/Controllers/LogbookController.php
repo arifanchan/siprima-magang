@@ -8,10 +8,10 @@ use Illuminate\Http\Request;
 class LogbookController extends Controller
 {
     // Edit logbook
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, $logbookId)
     {
-        $logbook = Logbook::findOrFail($id);
-        $activityDate = $request->input('date', $logbook->date);
+        $logbook = Logbook::findOrFail($logbookId);
+        $activityDate = $logbook->date;
         $today = now()->toDateString();
         $internship = $logbook->internshipActivity;
         $start = $internship ? $internship->start_date : null;
@@ -50,5 +50,33 @@ class LogbookController extends Controller
         $logbook = Logbook::findOrFail($id);
         $logbook->delete();
         return redirect()->back()->with('status', 'Logbook berhasil dihapus.');
+    }
+
+    // Menampilkan logbook berdasarkan aktivitas magang
+    public function activityLogbooks($id)
+    {
+        $internshipActivity = \App\Models\InternshipActivity::with(['logbooks' => function($q) {
+            $q->orderBy('date', 'desc');
+        }])->findOrFail($id);
+        $logbooks = $internshipActivity->logbooks;
+        return inertia('internship-activities/[id]/logbook', [
+            'internshipActivity' => $internshipActivity,
+            'logbooks' => $logbooks,
+        ]);
+    }
+
+    // Menampilkan detail logbook untuk edit/show
+    public function show($id, $logbookId)
+    {
+        $logbook = \App\Models\Logbook::findOrFail($logbookId);
+        $internshipActivity = $logbook->internshipActivity;
+        // Convert evidence_harian to URL if exists
+        if ($logbook->evidence_harian) {
+            $logbook->evidence_harian = \Storage::url($logbook->evidence_harian);
+        }
+        return inertia('internship-activities/[id]/logbook/[logbookId]', [
+            'logbook' => $logbook,
+            'internshipActivity' => $internshipActivity,
+        ]);
     }
 }

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import 'dayjs/locale/id';
+import { useForm } from '@inertiajs/react';
 
 // Konfigurasi dayjs untuk menggunakan locale Indonesia
 dayjs.extend(localizedFormat);
@@ -25,7 +26,7 @@ const breadcrumbs = (activity: any): BreadcrumbItem[] => [
 
 export default function InternshipPresencePage() {
     // Ambil data aktivitas dan presensi dari props Inertia (dummy/mock untuk awal)
-    const { internshipActivity, presences } = usePage().props as any;
+    const { internshipActivity, presences, flash, errors } = usePage().props as any;
     if (!internshipActivity) {
         return <div className="p-8 text-center text-gray-500">Aktivitas magang tidak ditemukan.</div>;
     }
@@ -81,8 +82,23 @@ export default function InternshipPresencePage() {
             return 0;
         });
 
+    // Cek apakah periode magang sudah berakhir
+    const today = new Date().toISOString().slice(0, 10);
+    const isEnded = internshipActivity.end_date && today > internshipActivity.end_date;
+
     return (
         <AppLayout breadcrumbs={breadcrumbs(internshipActivity)}>
+            {/* Pesan sukses dan error */}
+            {flash?.status && (
+                <div className="mb-4 p-3 bg-green-100 text-green-800 rounded">{flash.status}</div>
+            )}
+            {errors && Object.keys(errors).length > 0 && (
+                <div className="mb-4 p-3 bg-red-100 text-red-800 rounded">
+                    {Object.values(errors).map((err, i) => (
+                        <div key={i}>{err as string}</div>
+                    ))}
+                </div>
+            )}
             <Head title={`Presensi Magang #${internshipActivity.id}`} />
             <div className="px-4 py-6">
                 <Heading title="Presensi Magang" description="Lakukan presensi masuk dan keluar setiap hari magang Anda di sini." />
@@ -107,6 +123,9 @@ export default function InternshipPresencePage() {
                             <div className="p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-white dark:bg-gray-900 mb-4">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="font-semibold text-base">Presensi Hari Ini</div>
+                                    {isEnded ? (
+                                        <div className="text-red-600 font-semibold">Periode magang telah berakhir. Presensi tidak dapat dilakukan.</div>
+                                    ) : (
                                     <form className="flex flex-col md:flex-row gap-2 items-center">
                                         {(() => {
                                             // Cek apakah sudah presensi masuk hari ini
@@ -115,12 +134,12 @@ export default function InternshipPresencePage() {
                                             if (!todayPresence || !todayPresence.check_in) {
                                                 // Belum presensi masuk
                                                 return (
-                                                    <Button type="button" onClick={handleCheckIn} className="w-full md:w-auto font-bold shadow-lg text-lg px-6 py-2 bg-green-600 hover:bg-green-700 text-white border-2 border-green-700" size="lg" variant="primary">Presensi Masuk</Button>
+                                                    <Button type="button" onClick={handleCheckIn} className="w-full md:w-auto font-bold shadow-lg text-lg px-6 py-2 bg-green-600 hover:bg-green-700 text-white border-2 border-green-700" size="lg" variant="primary" disabled={isEnded}>Presensi Masuk</Button>
                                                 );
                                             } else if (!todayPresence.check_out) {
                                                 // Sudah presensi masuk, belum keluar
                                                 return (
-                                                    <Button type="button" onClick={handleCheckOut} className="w-full md:w-auto font-bold shadow-lg text-lg px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-700" size="lg" variant="success">Presensi Keluar</Button>
+                                                    <Button type="button" onClick={handleCheckOut} className="w-full md:w-auto font-bold shadow-lg text-lg px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-700" size="lg" variant="success" disabled={isEnded}>Presensi Keluar</Button>
                                                 );
                                             } else {
                                                 // Sudah presensi masuk dan keluar
@@ -130,6 +149,7 @@ export default function InternshipPresencePage() {
                                             }
                                         })()}
                                     </form>
+                                    )}
                                 </div>
                             </div>
                         </div>

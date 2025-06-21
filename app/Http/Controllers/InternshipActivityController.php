@@ -42,14 +42,16 @@ class InternshipActivityController extends Controller
             ->findOrFail($id);
         $today = now()->toDateString();
         $todayAssignments = $activity->assignments()->whereDate('due_date', $today)->get();
-        // Ambil semua presences untuk aktivitas magang ini
         $presences = $activity->presences()->orderBy('date', 'desc')->get();
         $todayPresence = $activity->presences()->whereDate('date', $today)->first();
+        // Tambahkan pengecekan logbook hari ini
+        $todayLogbook = $activity->logbooks()->whereDate('date', $today)->exists();
         return Inertia::render('internship-activities/[id]', [
             'internshipActivity' => $activity,
             'today_assignments' => $todayAssignments,
             'presences' => $presences,
             'today_presence' => $todayPresence,
+            'today_logbook' => $todayLogbook, // <-- tambahkan ini
         ]);
     }
 

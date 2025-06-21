@@ -81,18 +81,24 @@ export default function InternshipAssignmentsPage() {
                                         <tr className="bg-gray-100 dark:bg-gray-800">
                                             <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm">No</th>
                                             <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm">Judul</th>
+                                            <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm">Dibuat</th>
                                             <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm">Jatuh Tempo</th>
                                             <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm">Status</th>
-                                            <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {assignments && assignments.length > 0 ? assignments.map((item: any, idx: number) => (
                                             <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
                                                 <td className="px-4 py-2 border text-center">{idx + 1}</td>
-                                                <td className="px-4 py-2 border text-blue-600 dark:text-blue-400 font-medium underline cursor-pointer">
-                                                    <a href={`/internship-activities/${internshipActivity.id}/assignments/${item.id}`}>{item.title}</a>
+                                                <td className="px-4 py-2 border">
+                                                    <a
+                                                        href={`/internship-activities/${internshipActivity.id}/assignments/${item.id}`}
+                                                        className="text-primary-700 dark:text-primary-300 font-semibold underline hover:text-primary-900 dark:hover:text-primary-100 transition"
+                                                    >
+                                                        {item.title}
+                                                    </a>
                                                 </td>
+                                                <td className="px-4 py-2 border text-gray-900 dark:text-gray-100">{item.created_at ? item.created_at.slice(0, 10) : '-'}</td>
                                                 <td className="px-4 py-2 border text-gray-900 dark:text-gray-100">{item.due_date}</td>
                                                 <td className="px-4 py-2 border text-gray-900 dark:text-gray-100 capitalize">
                                                     <span className={`inline-block px-2 py-1 rounded text-xs font-semibold
@@ -103,12 +109,6 @@ export default function InternshipAssignmentsPage() {
                                                         ${item.status === 'submitted' ? 'bg-purple-100 text-purple-800' : ''}
                                                         ${item.status === 'reviewed' ? 'bg-gray-200 text-gray-800' : ''}
                                                     `}>{item.status || '-'}</span>
-                                                </td>
-                                                <td className="px-4 py-2 border text-gray-900 dark:text-gray-100 text-center">
-                                                    <a href={`/internship-activities/${internshipActivity.id}/assignments/${item.id}`}
-                                                        className="inline-block px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-                                                        Detail
-                                                    </a>
                                                 </td>
                                             </tr>
                                         )) : (

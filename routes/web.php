@@ -47,6 +47,11 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('internship-activities.presence');
     Route::get('/internship-activities/{id}/assignments', [AssignmentController::class, 'activityAssignments'])->name('internship-activities.assignments');
+    Route::get('/internship-activities/{activity}/assignments/{assignment}', [AssignmentController::class, 'show'])
+        ->name('internship-activities.assignments.show');
+    Route::get('/internship-activities/{id}/logbook', [\App\Http\Controllers\LogbookController::class, 'activityLogbooks'])->name('internship-activities.logbook');
+    Route::get('/internship-activities/{id}/logbook/{logbookId}', [\App\Http\Controllers\LogbookController::class, 'show'])->name('internship-activities.logbook.show');
+    Route::post('/internship-activities/{id}/logbook/{logbookId}/update', [\App\Http\Controllers\LogbookController::class, 'update'])->name('internship-activities.logbook.update');
 
 });
 
