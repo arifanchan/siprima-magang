@@ -56,4 +56,38 @@ class InternshipActivity extends Model
     {
         return $this->hasOne(FinalAssessment::class);
     }
+
+    // Progress persentase kehadiran
+    public function getPresencePercentAttribute()
+    {
+        $totalDays = 0;
+        if ($this->start_date && $this->end_date) {
+            $start = \Carbon\Carbon::parse($this->start_date);
+            $end = \Carbon\Carbon::parse($this->end_date);
+            $totalDays = $start->diffInWeekdays($end) + 1; // Hanya hari kerja (Senin-Jumat)
+        }
+        $presenceCount = $this->presences()->count();
+        return $totalDays > 0 ? round(($presenceCount / $totalDays) * 100) : 0;
+    }
+
+    // Progress persentase logbook
+    public function getLogbookPercentAttribute()
+    {
+        $totalDays = 0;
+        if ($this->start_date && $this->end_date) {
+            $start = \Carbon\Carbon::parse($this->start_date);
+            $end = \Carbon\Carbon::parse($this->end_date);
+            $totalDays = $start->diffInWeekdays($end) + 1;
+        }
+        $logbookCount = $this->logbooks()->count();
+        return $totalDays > 0 ? round(($logbookCount / $totalDays) * 100) : 0;
+    }
+
+    // Progress persentase tugas
+    public function getAssignmentPercentAttribute()
+    {
+        $totalAssignments = $this->assignments()->count();
+        $completedAssignments = $this->assignments()->where('status', 'completed')->count();
+        return $totalAssignments > 0 ? round(($completedAssignments / $totalAssignments) * 100) : 0;
+    }
 }

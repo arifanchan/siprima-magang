@@ -32,4 +32,16 @@ class Mentor extends Model
     {
         return $this->hasMany(\App\Models\InternshipActivity::class);
     }
+
+    public function profile()
+    {
+        return $this->hasOneThrough(
+            \App\Models\Profile::class,
+            \App\Models\User::class,
+            'id',        // Foreign key on users table...
+            'user_id',   // Foreign key on profiles table...
+            'user_id',   // Local key on mentors table...
+            'id'         // Local key on users table...
+        );
+    }
 }
