@@ -11,6 +11,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileEditController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\FinalAssessmentController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -35,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('internship-applications', InternshipApplicationController::class)->only(['index', 'show', 'create', 'store']);
     Route::resource('internship-activities', InternshipActivityController::class)->only(['index', 'show']);
     Route::resource('assignments', AssignmentController::class);
+    Route::resource('final-assessments', \App\Http\Controllers\FinalAssessmentController::class);
     Route::post('/presences/check-in', [PresenceController::class, 'checkIn'])->name('presences.check-in');
     Route::post('/presences/check-out', [PresenceController::class, 'checkOut'])->name('presences.check-out');
     // Sub-routes for internship-activities detail navigation
@@ -52,6 +54,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/internship-activities/{id}/logbook', [\App\Http\Controllers\LogbookController::class, 'activityLogbooks'])->name('internship-activities.logbook');
     Route::get('/internship-activities/{id}/logbook/{logbookId}', [\App\Http\Controllers\LogbookController::class, 'show'])->name('internship-activities.logbook.show');
     Route::post('/internship-activities/{id}/logbook/{logbookId}/update', [\App\Http\Controllers\LogbookController::class, 'update'])->name('internship-activities.logbook.update');
+    // Route laporan akhir (final report)
+    Route::get('/internship-activities/{id}/report', [InternshipActivityController::class, 'report'])->name('internship-activities.report');
+    Route::post('/internship-activities/{id}/report', [InternshipActivityController::class, 'updateReport'])->name('internship-activities.report.update');
+    // Route penilaian akhir (final assessment)
+    Route::get('/internship-activities/{id}/final-assessment', [InternshipActivityController::class, 'finalAssessment'])->name('internship-activities.final-assessment');
 
 });
 

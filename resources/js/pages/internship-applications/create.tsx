@@ -26,9 +26,25 @@ export default function InternshipApplicationsCreate({ user, profile, student }:
     description: '',
   });
 
+  const [otherFiles, setOtherFiles] = useState<File[]>([]);
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     post('/internship-applications', { forceFormData: true });
+  }
+
+  function handleOtherFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setOtherFiles(prev => [...prev, ...filesArray]);
+      setData('other_supporting_documents', [...otherFiles, ...filesArray]);
+    }
+  }
+
+  function removeOtherFile(index: number) {
+    const newFiles = otherFiles.filter((_, i) => i !== index);
+    setOtherFiles(newFiles);
+    setData('other_supporting_documents', newFiles);
   }
 
   return (
@@ -38,17 +54,20 @@ export default function InternshipApplicationsCreate({ user, profile, student }:
         <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
           <aside className="w-full max-w-xl lg:w-48">
             <nav className="flex flex-col space-y-1 space-x-0">
-              {internshipNavItems.map((item) => (
-                <Button
-                  key={item.key}
-                  size="sm"
-                  variant="ghost"
-                  asChild
-                  className="w-full justify-start"
-                >
-                  <Link href={item.href}>{item.title}</Link>
-                </Button>
-              ))}
+                {internshipNavItems.map((item) => {
+                    const isActive = window.location.pathname === item.href;
+                    return (
+                        <Button
+                            key={item.key}
+                            size="sm"
+                            variant="ghost"
+                            asChild
+                            className={`w-full justify-start ${isActive ? 'bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-100'} ${isActive ? 'font-bold' : ''}`}
+                        >
+                            <Link href={item.href}>{item.title}</Link>
+                        </Button>
+                    );
+                })}
             </nav>
           </aside>
           <div className="flex-1">
@@ -102,13 +121,21 @@ export default function InternshipApplicationsCreate({ user, profile, student }:
                       <InputError message={errors.cv_file} />
                     </div>
                     <div className="md:col-span-2">
-                      <Label htmlFor="other_supporting_documents">Dokumen Lainnya (Sertifikat Keahlian, Penghargaan, dsb)</Label>
-                      <Input id="other_supporting_documents" type="file" multiple onChange={e => setData('other_supporting_documents', e.target.files)} />
+                      <Label htmlFor="other_supporting_documents">Dokumen Lainnya (Proposal, Sertifikat Keahlian, Penghargaan, dsb)</Label>
+                      <Input id="other_supporting_documents" type="file" multiple onChange={handleOtherFilesChange} />
+                      <div className="mt-2 space-y-1">
+                        {otherFiles.map((file, idx) => (
+                          <div key={idx} className="flex items-center gap-2 text-sm">
+                            <span>{file.name}</span>
+                            <button type="button" className="text-red-500 hover:underline" onClick={() => removeOtherFile(idx)}>Hapus</button>
+                          </div>
+                        ))}
+                      </div>
                       <InputError message={errors.other_supporting_documents} />
                     </div>
                     <div className="md:col-span-2">
                       <Label htmlFor="description">Deskripsi</Label>
-                      <textarea id="description" className="input input-bordered w-full" value={data.description || ''} onChange={e => setData('description', e.target.value)} />
+                      <textarea id="description" className="input input-bordered w-full border-2" value={data.description || ''} onChange={e => setData('description', e.target.value)} />
                       <InputError message={errors.description} />
                     </div>
                   </div>

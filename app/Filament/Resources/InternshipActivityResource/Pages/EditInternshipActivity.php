@@ -77,6 +77,20 @@ class EditInternshipActivity extends EditRecord
                     }
                 }
             }
+            // 6. Otomasi final_assessment jika belum ada
+            if (!$record->finalAssessment) {
+                $record->finalAssessment()->create([
+                    'assessment_date' => null,
+                    'discipline' => null,
+                    'responsibility' => null,
+                    'teamwork' => null,
+                    'initiative' => null,
+                    'communication' => null,
+                    'technical_skill' => null,
+                    'final_score' => null,
+                    'comment' => null,
+                ]);
+            }
         }
     }
 }

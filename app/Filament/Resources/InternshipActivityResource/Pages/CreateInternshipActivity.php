@@ -15,23 +15,60 @@ class CreateInternshipActivity extends CreateRecord
 
         // Siapkan presensi dan logbook hanya jika status menjadi 'active'
         if ($record->status === 'active') {
+            // Assignment pertama
+            $firstAssignment = $record->assignments()->first();
+            if (!$firstAssignment) {
+                $firstAssignment = $record->assignments()->create([
+                    'title' => 'Follow & Like Media Sosial Institusi',
+                    'description' => '1. Follow seluruh akun media sosial institusi.\n2. Like minimal 3 postingan terakhir di setiap akun.\n3. Upload screenshot sebagai bukti sudah follow dan like.\n\nCatatan: Daftar akun media sosial dapat dilihat di halaman profil atau website institusi.',
+                    'due_date' => $record->start_date,
+                    'status' => 'pending',
+                ]);
+            }
+            // Notifikasi
+            \App\Models\User::find(optional($record->internshipApplication->student)->user_id)?->notify(new \App\Notifications\InternshipActivatedNotification($record));
+            \App\Models\User::find(optional($record->mentor)->user_id)?->notify(new \App\Notifications\InternshipMentorAssignedNotification($record));
+            // Audit log
+            \Log::info('Aktivitas magang diaktifkan', [
+                'internship_activity_id' => $record->id,
+                'admin_id' => auth()->id(),
+                'mentor_id' => $record->mentor_id,
+                'student_id' => optional($record->internshipApplication->student)->id,
+            ]);
+            // Presensi & logbook
             $start = \Carbon\Carbon::parse($record->start_date);
             $end = \Carbon\Carbon::parse($record->end_date);
             for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
-                // Hanya hari kerja (Senin-Jumat)
                 if (in_array($date->dayOfWeek, [1, 2, 3, 4, 5])) {
                     $dateStr = $date->toDateString();
-                    // Siapkan presensi
-                    $record->presences()->create([
-                        'date' => $dateStr,
+                    $record->presences()->firstOrCreate([
+                        'date' => $dateStr
+                    ], [
                         'day' => strtolower($date->format('l')),
                     ]);
-                    // Siapkan logbook
-                    $record->logbooks()->create([
-                        'date' => $dateStr,
+                    $record->logbooks()->firstOrCreate([
+                        'date' => $dateStr
+                    ], [
                         'day' => strtolower($date->format('l')),
+                        'activity' => '',
+                        'description' => '',
+                        'status' => 'pending',
                     ]);
                 }
+            }
+            // Final assessment
+            if (!$record->finalAssessment) {
+                $record->finalAssessment()->create([
+                    'assessment_date' => null,
+                    'discipline' => null,
+                    'responsibility' => null,
+                    'teamwork' => null,
+                    'initiative' => null,
+                    'communication' => null,
+                    'technical_skill' => null,
+                    'final_score' => null,
+                    'comment' => null,
+                ]);
             }
         }
     }

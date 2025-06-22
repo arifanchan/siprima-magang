@@ -36,14 +36,20 @@ export default function InternshipApplicationsIndex({ applications = [], user, p
             <div className="flex flex-col lg:flex-row lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
                     <nav className="flex flex-col space-y-1 space-x-0">
-                        {internshipNavItems.map((item) => (
-                            <Button key={item.key}
-                          size="sm"
-                          variant="ghost"
-                          asChild
-                          className="w-full justify-start">
-                          <Link href={item.href}>{item.title}</Link>
-                      </Button>))}
+                        {internshipNavItems.map((item) => {
+                            const isActive = window.location.pathname === item.href;
+                            return (
+                                <Button
+                                    key={item.key}
+                                    size="sm"
+                                    variant="ghost"
+                                    asChild
+                                    className={`w-full justify-start ${isActive ? 'bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-100'} ${isActive ? 'font-bold' : ''}`}
+                                >
+                                    <Link href={item.href}>{item.title}</Link>
+                                </Button>
+                            );
+                        })}
                     </nav>
                 </aside>
             </div>
@@ -59,17 +65,20 @@ export default function InternshipApplicationsIndex({ applications = [], user, p
         <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
           <aside className="w-full max-w-xl lg:w-48">
             <nav className="flex flex-col space-y-1 space-x-0">
-              {internshipNavItems.map((item) => (
-                <Button
-                  key={item.key}
-                  size="sm"
-                  variant="ghost"
-                  asChild
-                  className="w-full justify-start"
-                >
-                  <Link href={item.href}>{item.title}</Link>
-                </Button>
-              ))}
+              {internshipNavItems.map((item) => {
+                const isActive = window.location.pathname === item.href;
+                return (
+                  <Button
+                    key={item.key}
+                    size="sm"
+                    variant="ghost"
+                    asChild
+                    className={`w-full justify-start ${isActive ? 'bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-100'} ${isActive ? 'font-bold' : ''}`}
+                  >
+                    <Link href={item.href}>{item.title}</Link>
+                  </Button>
+                );
+              })}
             </nav>
           </aside>
           <div className="flex-1">

@@ -97,4 +97,75 @@ class InternshipActivityController extends Controller
         $activity->delete();
         return redirect()->back()->with('status', 'Internship activity deleted successfully.');
     }
+
+    public function report($id)
+    {
+        $activity = InternshipActivity::with(['internshipApplication.student.user', 'mentor.user'])->findOrFail($id);
+        $user = auth()->user();
+        // Otorisasi: hanya student terkait, mentor terkait, atau admin
+        if ($user->role === 'student' && $activity->internshipApplication->student->user_id !== $user->id) {
+            abort(403);
+        }
+        if ($user->role === 'mentor' && $activity->mentor_id !== optional($user->mentor)->id) {
+            abort(403);
+        }
+        return Inertia::render('internship-activities/[id]/report', [
+            'internshipActivity' => $activity,
+        ]);
+    }
+
+    public function updateReport(Request $request, $id)
+    {
+        $activity = InternshipActivity::findOrFail($id);
+        $user = auth()->user();
+        // Otorisasi: hanya student terkait, mentor terkait, atau admin
+        if ($user->role === 'student' && $activity->internshipApplication->student->user_id !== $user->id) {
+            abort(403);
+        }
+        if ($user->role === 'mentor' && $activity->mentor_id !== optional($user->mentor)->id) {
+            abort(403);
+        }
+        $data = [];
+        // Penamaan dan penyimpanan file konsisten per user
+        $studentUserId = $activity->internshipApplication->student->user_id;
+        if ($request->hasFile('final_report')) {
+            // Hapus file lama jika ada
+            if ($activity->final_report) {
+                \Storage::disk('public')->delete($activity->final_report);
+            }
+            $filename = now()->format('Y-m-d') . '_' . $request->file('final_report')->getClientOriginalName();
+            $relativePath = 'users/' . $studentUserId . '/internship/final_reports/' . $filename;
+            $request->file('final_report')->storeAs('users/' . $studentUserId . '/internship/final_reports', $filename, 'public');
+            $data['final_report'] = $relativePath;
+        }
+        if ($request->hasFile('final_presentation')) {
+            if ($activity->final_presentation) {
+                \Storage::disk('public')->delete($activity->final_presentation);
+            }
+            $filename = now()->format('Y-m-d') . '_' . $request->file('final_presentation')->getClientOriginalName();
+            $relativePath = 'users/' . $studentUserId . '/internship/final_presentations/' . $filename;
+            $request->file('final_presentation')->storeAs('users/' . $studentUserId . '/internship/final_presentations', $filename, 'public');
+            $data['final_presentation'] = $relativePath;
+        }
+        // Student hanya boleh update file, mentor/admin boleh update feedback
+        if (in_array($user->role, ['mentor', 'admin']) && $request->has('feedback')) {
+            $data['feedback'] = $request->input('feedback');
+        }
+        $activity->update($data);
+        return redirect()->back()->with('status', 'Laporan akhir berhasil diperbarui.');
+    }
+
+    public function finalAssessment($id)
+    {
+        $activity = \App\Models\InternshipActivity::with([
+            'mentor.user',
+            'finalAssessment',
+            'internshipApplication.student.user',
+            'internshipApplication.student.profile',
+        ])->findOrFail($id);
+        return \Inertia\Inertia::render('internship-activities/[id]/final-assessment', [
+            'internshipActivity' => $activity,
+            'finalAssessment' => $activity->finalAssessment,
+        ]);
+    }
 }

@@ -39,7 +39,7 @@ export default function DocumentsEdit({ profile }: any) {
         });
     };
     return (
-        <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/dashboard' }, { title: 'Profile', href: '/profile' }, { title: 'Edit Dokumen', href: '/profile/documents/edit' }]}>
+        <AppLayout breadcrumbs={[{ title: 'Profile', href: '/profile' }, { title: 'Edit Dokumen', href: '/profile/documents/edit' }]}>
             {/* Modal Preview Dokumen dengan Dialog */}
             <Dialog open={modalOpen} onOpenChange={setModalOpen}>
                 <DialogContent className="max-w-2xl w-full">
@@ -57,17 +57,20 @@ export default function DocumentsEdit({ profile }: any) {
                 <div className="flex flex-col lg:flex-row lg:space-x-12">
                     <aside className="w-full max-w-xl lg:w-48 mb-8 lg:mb-0">
                         <nav className="flex flex-col space-y-1 space-x-0">
-                            {profileNavItems.map((item) => (
-                                <Button
-                                    key={item.key}
-                                    size="sm"
-                                    variant="ghost"
-                                    asChild
-                                    className="w-full justify-start"
-                                >
-                                    <Link href={item.href}>{item.title}</Link>
-                                </Button>
-                            ))}
+                            {profileNavItems.map((item) => {
+                                const isActive = window.location.pathname === item.href;
+                                return (
+                                    <Button
+                                        key={item.key}
+                                        size="sm"
+                                        variant="ghost"
+                                        asChild
+                                        className={`w-full justify-start ${isActive ? 'bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-100'} ${isActive ? 'font-bold' : ''}`}
+                                    >
+                                        <Link href={item.href}>{item.title}</Link>
+                                    </Button>
+                                );
+                            })}
                         </nav>
                     </aside>
                     <div className="flex-1">

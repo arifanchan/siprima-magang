@@ -61,15 +61,17 @@ export default function LogbookDetailPage() {
         return <div className="p-8 text-center text-gray-500">Logbook tidak ditemukan.</div>;
     }
 
+    // Cek apakah magang sudah selesai
+    const isEnded = internshipActivity?.status === 'completed' || (internshipActivity?.end_date && dayjs().isAfter(dayjs(internshipActivity.end_date)));
+
     // Sidebar nav items sama seperti halaman lain
     const navItems = [
         { key: 'index', title: 'Daftar Aktivitas', href: '/internship-activities' },
         { key: 'presence', title: 'Presensi', href: `/internship-activities/${internshipActivity.id}/presence` },
-        { key: 'logbook', title: 'Logbook Harian', href: `/internship-activities/${internshipActivity.id}/logbook` },
         { key: 'assignments', title: 'Tugas dari Mentor', href: `/internship-activities/${internshipActivity.id}/assignments` },
+        { key: 'logbook', title: 'Logbook Harian', href: `/internship-activities/${internshipActivity.id}/logbook` },
         { key: 'final-report', title: 'Laporan Akhir', href: `/internship-activities/${internshipActivity.id}/report` },
         { key: 'assessment', title: 'Penilaian & Sertifikat', href: `/internship-activities/${internshipActivity.id}/final-assessment` },
-        { key: 'feedback', title: 'Feedback/Notifikasi', href: '#' },
     ];
 
     return (
@@ -85,17 +87,20 @@ export default function LogbookDetailPage() {
                 <div className="flex flex-col lg:flex-row lg:space-x-12 mb-8">
                     <aside className="w-full max-w-xl lg:w-48 mb-8 lg:mb-0">
                         <nav className="flex flex-col space-y-1 space-x-0">
-                            {navItems.map((item) => (
-                                <Button
-                                    key={item.key}
-                                    size="sm"
-                                    variant={item.key === 'logbook' ? 'secondary' : 'ghost'}
-                                    asChild
-                                    className={`w-full justify-start ${item.key === 'logbook' ? 'font-bold text-black dark:text-white bg-gray-200 dark:bg-gray-800' : ''}`}
-                                >
-                                    <Link href={item.href}>{item.title}</Link>
-                                </Button>
-                            ))}
+                            {navItems.map((item) => {
+                                const isActive = window.location.pathname === item.href;
+                                return (
+                                    <Button
+                                        key={item.key}
+                                        size="sm"
+                                        variant="ghost"
+                                        asChild
+                                        className={`w-full justify-start ${isActive ? 'bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-100'} ${isActive ? 'font-bold' : ''}`}
+                                    >
+                                        <Link href={item.href}>{item.title}</Link>
+                                    </Button>
+                                );
+                            })}
                         </nav>
                     </aside>
                     <main className="flex-1">
@@ -118,15 +123,15 @@ export default function LogbookDetailPage() {
                             <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4">
                                 <div>
                                     <div className="font-semibold mb-1">Judul Kegiatan</div>
-                                    <Input type="text" name="activity" value={form.activity} onChange={handleChange} className="w-full" required />
+                                    <Input type="text" name="activity" value={form.activity} onChange={handleChange} className="w-full" required disabled={isEnded} />
                                 </div>
                                 <div>
                                     <div className="font-semibold mb-1">Deskripsi</div>
-                                    <textarea name="description" value={form.description} onChange={handleChange} className="w-full border rounded px-3 py-2 text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900" required rows={3} />
+                                    <textarea name="description" value={form.description} onChange={handleChange} className="w-full border rounded px-3 py-2 text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900" required rows={3} disabled={isEnded} />
                                 </div>
                                 <div>
                                     <div className="font-semibold mb-1">Bukti Kegiatan (evidence)</div>
-                                    <Input type="file" name="evidence_harian" accept="image/*,application/pdf" onChange={handleFileChange} className="w-full" />
+                                    <Input type="file" name="evidence_harian" accept="image/*,application/pdf" onChange={handleFileChange} className="w-full" disabled={isEnded} />
                                     {/* Tombol preview file jika sudah ada di database */}
                                     {logbook.evidence_harian && !preview && (
                                         <FilePreviewButton
@@ -167,7 +172,7 @@ export default function LogbookDetailPage() {
                                     </Dialog>
                                 </div>
                                 <div className="flex gap-2 mt-4">
-                                    <Button type="submit" disabled={saving} variant="secondary" className="bg-black text-white hover:bg-gray-800">
+                                    <Button type="submit" disabled={saving || isEnded} variant="secondary" className="bg-black text-white hover:bg-gray-800">
                                         {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
                                     </Button>
                                     <Button asChild variant="secondary">

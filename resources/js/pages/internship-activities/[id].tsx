@@ -29,11 +29,10 @@ export default function InternshipActivityDetailPage() {
   const navItems = [
     { key: 'index', title: 'Daftar Aktivitas', href: '/internship-activities' },
     { key: 'presence', title: 'Presensi', href: `/internship-activities/${internshipActivity.id}/presence` },
+      { key: 'assignments', title: 'Tugas dari Mentor', href: `/internship-activities/${internshipActivity.id}/assignments` },
     { key: 'logbook', title: 'Logbook Harian', href: `/internship-activities/${internshipActivity.id}/logbook` },
-    { key: 'assignments', title: 'Tugas dari Mentor', href: `/internship-activities/${internshipActivity.id}/assignments` },
-    { key: 'final-report', title: 'Laporan Akhir', href: `/internship-activities/${internshipActivity.id}/report` },
+    { key: 'report', title: 'Laporan Akhir', href: `/internship-activities/${internshipActivity.id}/report` },
     { key: 'assessment', title: 'Penilaian & Sertifikat', href: `/internship-activities/${internshipActivity.id}/final-assessment` },
-    { key: 'feedback', title: 'Feedback/Notifikasi', href: '#' },
   ];
 
   // DEBUG: tampilkan isi todayPresence
@@ -50,17 +49,20 @@ export default function InternshipActivityDetailPage() {
         <div className="flex flex-col lg:flex-row lg:space-x-12 mb-8">
           <aside className="w-full max-w-xl lg:w-48 mb-8 lg:mb-0">
             <nav className="flex flex-col space-y-1 space-x-0">
-              {navItems.map((item) => (
-                <Button
-                  key={item.key}
-                  size="sm"
-                  variant="ghost"
-                  asChild
-                  className="w-full justify-start"
-                >
-                  <Link href={item.href}>{item.title}</Link>
-                </Button>
-              ))}
+                {navItems.map((item) => {
+                    const isActive = window.location.pathname === item.href;
+                    return (
+                        <Button
+                            key={item.key}
+                            size="sm"
+                            variant="ghost"
+                            asChild
+                            className={`w-full justify-start ${isActive ? 'bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-100'} ${isActive ? 'font-bold' : ''}`}
+                        >
+                            <Link href={item.href}>{item.title}</Link>
+                        </Button>
+                    );
+                })}
             </nav>
           </aside>
           <main className="flex-1">

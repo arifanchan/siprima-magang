@@ -36,4 +36,9 @@ class Student extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function profile()
+    {
+        return $this->hasOne(\App\Models\Profile::class, 'user_id', 'user_id');
+    }
 }

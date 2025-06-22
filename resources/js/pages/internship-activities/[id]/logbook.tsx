@@ -38,16 +38,57 @@ export default function InternshipLogbookPage() {
         return <div className="p-8 text-center text-gray-500">Aktivitas magang tidak ditemukan.</div>;
     }
 
+    // Cek apakah magang sudah selesai
+    const isEnded = internshipActivity?.status === 'completed' || (internshipActivity?.end_date && dayjs().isAfter(dayjs(internshipActivity.end_date)));
+
     // Sidebar nav items sama seperti halaman lain
     const navItems = [
         { key: 'index', title: 'Daftar Aktivitas', href: '/internship-activities' },
         { key: 'presence', title: 'Presensi', href: `/internship-activities/${internshipActivity.id}/presence` },
-        { key: 'logbook', title: 'Logbook Harian', href: `/internship-activities/${internshipActivity.id}/logbook` },
         { key: 'assignments', title: 'Tugas dari Mentor', href: `/internship-activities/${internshipActivity.id}/assignments` },
+        { key: 'logbook', title: 'Logbook Harian', href: `/internship-activities/${internshipActivity.id}/logbook` },
         { key: 'final-report', title: 'Laporan Akhir', href: `/internship-activities/${internshipActivity.id}/report` },
         { key: 'assessment', title: 'Penilaian & Sertifikat', href: `/internship-activities/${internshipActivity.id}/final-assessment` },
-        { key: 'feedback', title: 'Feedback/Notifikasi', href: '#' },
     ];
+
+    // State untuk pencarian dan sort
+    const [search, setSearch] = useState('');
+    const [sortKey, setSortKey] = useState<'date'|'activity'|'status'>('date');
+    const [sortAsc, setSortAsc] = useState(false); // default: terbaru
+
+    // Helper untuk format tanggal dan hari dalam bahasa Indonesia
+    function formatTanggalIndo(dateStr: string) {
+        return dayjs(dateStr).locale('id').format('dddd, D MMMM YYYY');
+    }
+
+    // Filter dan sort logbook
+    const filteredLogbooks = (logbooks || [])
+        .filter((item: any) => {
+            const q = search.toLowerCase();
+            return (
+                formatTanggalIndo(item.date).toLowerCase().includes(q) ||
+                (item.activity || '').toLowerCase().includes(q) ||
+                (item.description || '').toLowerCase().includes(q) ||
+                (item.status || '').toLowerCase().includes(q) ||
+                (item.feedback || '').toLowerCase().includes(q)
+            );
+        })
+        .sort((a: any, b: any) => {
+            let aVal, bVal;
+            if (sortKey === 'date') {
+                aVal = a.date;
+                bVal = b.date;
+            } else if (sortKey === 'activity') {
+                aVal = a.activity || '';
+                bVal = b.activity || '';
+            } else if (sortKey === 'status') {
+                aVal = a.status || '';
+                bVal = b.status || '';
+            }
+            if (aVal < bVal) return sortAsc ? -1 : 1;
+            if (aVal > bVal) return sortAsc ? 1 : -1;
+            return 0;
+        });
 
     // Handler form logbook (dummy, belum terhubung backend)
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -67,43 +108,67 @@ export default function InternshipLogbookPage() {
                 <div className="flex flex-col lg:flex-row lg:space-x-12 mb-8">
                     <aside className="w-full max-w-xl lg:w-48 mb-8 lg:mb-0">
                         <nav className="flex flex-col space-y-1 space-x-0">
-                            {navItems.map((item) => (
-                                <Button
-                                    key={item.key}
-                                    size="sm"
-                                    variant={item.key === 'logbook' ? 'secondary' : 'ghost'}
-                                    asChild
-                                    className={`w-full justify-start ${item.key === 'logbook' ? 'font-bold text-black dark:text-white bg-gray-200 dark:bg-gray-800' : ''}`}
-                                >
-                                    <Link href={item.href}>{item.title}</Link>
-                                </Button>
-                            ))}
+                            {navItems.map((item) => {
+                                const isActive = window.location.pathname === item.href;
+                                return (
+                                    <Button
+                                        key={item.key}
+                                        size="sm"
+                                        variant="ghost"
+                                        asChild
+                                        className={`w-full justify-start ${isActive ? 'bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-100'} ${isActive ? 'font-bold' : ''}`}
+                                    >
+                                        <Link href={item.href}>{item.title}</Link>
+                                    </Button>
+                                );
+                            })}
                         </nav>
                     </aside>
                     <main className="flex-1">
                         <Card className="mb-8 p-6">
+                            {isEnded && (
+                                <div className="mb-4 p-3 rounded border text-sm font-semibold bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-700 text-center">
+                                    Magang telah berakhir. Anda tidak dapat lagi mengisi atau mengedit logbook.
+                                </div>
+                            )}
                             <h2 className="font-semibold text-lg mb-4">Daftar Logbook</h2>
+                            {/* Search input di kanan atas ala presence.tsx */}
+                            <div className="flex justify-end mb-2">
+                                <input
+                                    type="text"
+                                    placeholder="Cari tanggal, judul, deskripsi, status, feedback..."
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
+                                    className="border rounded px-2 py-1 w-full md:w-72 text-sm"
+                                />
+                            </div>
                             <div className="overflow-x-auto">
                                 <table className="min-w-full border text-sm bg-white dark:bg-gray-900">
                                     <thead>
                                         <tr className="bg-gray-100 dark:bg-gray-800">
-                                            <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm">Tanggal</th>
-                                            <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm">Judul Kegiatan</th>
+                                            <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm cursor-pointer select-none" onClick={() => { setSortKey('date'); setSortAsc(sortKey === 'date' ? !sortAsc : false); }}>
+                                                Tanggal {sortKey === 'date' && (sortAsc ? '↑' : '↓')}
+                                            </th>
+                                            <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm cursor-pointer select-none" onClick={() => { setSortKey('activity'); setSortAsc(sortKey === 'activity' ? !sortAsc : false); }}>
+                                                Judul Kegiatan {sortKey === 'activity' && (sortAsc ? '↑' : '↓')}
+                                            </th>
                                             <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm">Bukti</th>
-                                            <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm">Status</th>
+                                            <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm cursor-pointer select-none" onClick={() => { setSortKey('status'); setSortAsc(sortKey === 'status' ? !sortAsc : false); }}>
+                                                Status {sortKey === 'status' && (sortAsc ? '↑' : '↓')}
+                                            </th>
                                             <th className="px-4 py-2 border font-semibold text-gray-700 dark:text-gray-200 text-sm">Feedback</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {logbooks && logbooks.length > 0 ? logbooks.map((item: any) => (
+                                        {filteredLogbooks && filteredLogbooks.length > 0 ? filteredLogbooks.map((item: any) => (
                                             <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
                                                 {/* Tanggal sebagai link ke detail/show logbook */}
                                                 <td className="px-4 py-2 border align-top">
                                                     {item.date && dayjs(item.date).isAfter(dayjs(), 'day') ? (
-                                                        <span className="text-gray-400 cursor-not-allowed">{dayjs(item.date).locale('id').format('dddd, DD MMMM YYYY')}</span>
+                                                        <span className="text-gray-400 cursor-not-allowed">{formatTanggalIndo(item.date)}</span>
                                                     ) : (
                                                         <Link href={`/internship-activities/${internshipActivity.id}/logbook/${item.id}`} className="text-primary-700 dark:text-primary-300 font-semibold underline hover:text-primary-900 dark:hover:text-primary-100 transition">
-                                                            {item.date ? dayjs(item.date).locale('id').format('dddd, DD MMMM YYYY') : '-'}
+                                                            {item.date ? formatTanggalIndo(item.date) : '-'}
                                                         </Link>
                                                     )}
                                                 </td>

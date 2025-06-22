@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('transcript_file')->nullable();
             $table->string('advisor_name')->nullable();
             $table->string('advisor_phone')->nullable();
-            $table->string('emergency_contact')->nullable()
+            $table->string('emergency_contact')->nullable();
             $table->string('dss_status')->nullable();
             $table->decimal('dss_score', 5, 2)->nullable();
             $table->string('dss_recommendation')->nullable();
