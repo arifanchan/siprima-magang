@@ -9,31 +9,49 @@ import AppLogo from './app-logo';
 
 export function AppSidebar() {
     const { props } = usePage();
+    const user = props.auth?.user || props.user || {};
+    const role = user.role;
     const activeInternshipActivityId = props.activeInternshipActivityId as number | null;
 
-    // Buat mainNavItems dinamis
-    const mainNavItems: NavItem[] = [
-        {
-            title: 'Dashboard',
-            href: '/dashboard',
-            icon: LayoutGrid,
-        },
-        {
-            title: 'Profile',
-            href: '/profile',
-            icon: UserIcon,
-        },
-        {
-            title: 'Pengajuan Magang',
-            href: '/internship-applications',
-            icon: Folder,
-        },
-        {
-            title: 'Aktivitas Magang',
-            href: activeInternshipActivityId ? `/internship-activities/${activeInternshipActivityId}` : '/internship-activities',
-            icon: BookOpen,
-        },
-    ];
+    let mainNavItems: NavItem[] = [];
+    if (role === 'mentor') {
+        mainNavItems = [
+            {
+                title: 'Dashboard',
+                href: '/mentor/dashboard',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Profil',
+                href: '/mentor/profile',
+                icon: UserIcon,
+            },
+            // Tambahkan menu lain khusus mentor jika perlu
+        ];
+    } else {
+        mainNavItems = [
+            {
+                title: 'Dashboard',
+                href: '/dashboard',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Profile',
+                href: '/profile',
+                icon: UserIcon,
+            },
+            {
+                title: 'Pengajuan Magang',
+                href: '/internship-applications',
+                icon: Folder,
+            },
+            {
+                title: 'Aktivitas Magang',
+                href: activeInternshipActivityId ? `/internship-activities/${activeInternshipActivityId}` : '/internship-activities',
+                icon: BookOpen,
+            },
+        ];
+    }
 
     const footerNavItems: NavItem[] = [
         {

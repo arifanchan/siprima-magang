@@ -77,7 +77,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function mentor()
     {
-        return $this->hasOne(Mentor::class);
+        return $this->hasOne(Mentor::class)->withTrashed();
     }
 
     public function admin()

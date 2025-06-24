@@ -17,11 +17,8 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'can:isStudent'])->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
-});
-
-Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [ProfileEditController::class, 'edit'])->name('profile.edit');
     Route::post('/profile/edit', [ProfileEditController::class, 'update'])->name('profile.update');
@@ -57,7 +54,28 @@ Route::middleware('auth')->group(function () {
     Route::post('/internship-activities/{id}/report', [InternshipActivityController::class, 'updateReport'])->name('internship-activities.report.update');
     // Route penilaian akhir (final assessment)
     Route::get('/internship-activities/{id}/final-assessment', [InternshipActivityController::class, 'finalAssessment'])->name('internship-activities.final-assessment');
+});
 
+// Mentor dashboard & pages
+Route::middleware(['auth', 'can:isMentor'])->group(function () {
+    Route::get('/mentor/dashboard', function () {
+        $mentor = auth()->user()->mentor;
+        $students = $mentor ? $mentor->internshipActivities()->with(['internshipApplication.student.user'])->get()->map(function ($activity) {
+            $student = $activity->internshipApplication->student;
+            return [
+                'id' => $student->id,
+                'user' => $student->user,
+                'university' => $student->university,
+                'study_program' => $student->study_program,
+                'internship_period' => $activity->start_date . ' - ' . $activity->end_date,
+            ];
+        }) : collect();
+        return Inertia::render('mentor/dashboard', [
+            'students' => $students,
+        ]);
+    })->name('mentor.dashboard');
+    Route::get('/mentor/profile', [\App\Http\Controllers\MentorProfileController::class, 'show'])->name('mentor.profile.show');
+    // TODO: Tambahkan route lain untuk mentor jika diperlukan
 });
 
 require __DIR__.'/settings.php';
