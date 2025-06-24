@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025. Arifa N. Chan. All right Reserved
+ * This file is part of the SIPRIMA Magang Project.
+ * Developed with PhpStorm
+ */
+
 import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';

@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025. Arifa N. Chan. All right Reserved
+ * This file is part of the SIPRIMA Magang Project.
+ * Developed with PhpStorm
+ */
+
 import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';

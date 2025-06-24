@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025. Arifa N. Chan. All right Reserved
+ * This file is part of the SIPRIMA Magang Project.
+ * Developed with PhpStorm
+ */
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 import { UserInfo } from '@/components/user-info';

@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025. Arifa N. Chan. All right Reserved
+ * This file is part of the SIPRIMA Magang Project.
+ * Developed with PhpStorm
+ */
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useInitials } from '@/hooks/use-initials';
 import { type User } from '@/types';

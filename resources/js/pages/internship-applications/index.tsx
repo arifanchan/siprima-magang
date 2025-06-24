@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025. Arifa N. Chan. All right Reserved
+ * This file is part of the SIPRIMA Magang Project.
+ * Developed with PhpStorm
+ */
+
 // Halaman daftar/riwayat pengajuan magang
 import { Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';

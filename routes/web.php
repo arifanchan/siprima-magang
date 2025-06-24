@@ -1,4 +1,9 @@
 <?php
+/*
+ * Copyright (c) 2025. Arifa N. Chan. All right Reserved
+ * This file is part of the SIPRIMA Magang Project.
+ * Developed with PhpStorm
+ */
 
 use App\Http\Controllers\DocumentEditController;
 use App\Http\Controllers\InternshipActivityController;
@@ -17,7 +22,7 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
-Route::middleware(['auth', 'can:isStudent'])->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\RedirectIfMentor::class, 'can:isStudent'])->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [ProfileEditController::class, 'edit'])->name('profile.edit');
@@ -57,7 +62,7 @@ Route::middleware(['auth', 'can:isStudent'])->group(function () {
 });
 
 // Mentor dashboard & pages
-Route::middleware(['auth', 'can:isMentor'])->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\RedirectIfStudent::class, 'can:isMentor'])->group(function () {
     Route::get('/mentor/dashboard', function () {
         $mentor = auth()->user()->mentor;
         $students = $mentor ? $mentor->internshipActivities()->with(['internshipApplication.student.user'])->get()->map(function ($activity) {
@@ -77,6 +82,10 @@ Route::middleware(['auth', 'can:isMentor'])->group(function () {
     Route::get('/mentor/profile', [\App\Http\Controllers\MentorProfileController::class, 'show'])->name('mentor.profile.show');
     Route::get('/mentor/profile/edit', [\App\Http\Controllers\ProfileEditController::class, 'edit'])->name('mentor.profile.edit');
     Route::post('/mentor/profile/edit', [\App\Http\Controllers\ProfileEditController::class, 'update'])->name('mentor.profile.update');
+    Route::get('/mentor/mentor/edit', [\App\Http\Controllers\MentorEditController::class, 'edit'])->name('mentor.mentor.edit');
+    Route::post('/mentor/mentor/edit', [\App\Http\Controllers\MentorEditController::class, 'update'])->name('mentor.mentor.update');
+    Route::get('/mentor/medsos/edit', [\App\Http\Controllers\MediaSosialEditController::class, 'edit'])->name('mentor.medsos.edit');
+    Route::post('/mentor/medsos/edit', [\App\Http\Controllers\MediaSosialEditController::class, 'update'])->name('mentor.medsos.update');
     // TODO: Tambahkan route lain untuk mentor jika diperlukan
 });
 

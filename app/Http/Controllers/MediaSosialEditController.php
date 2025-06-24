@@ -1,4 +1,9 @@
 <?php
+/*
+ * Copyright (c) 2025. Arifa N. Chan. All right Reserved
+ * This file is part of the SIPRIMA Magang Project.
+ * Developed with PhpStorm
+ */
 
 namespace App\Http\Controllers;
 
@@ -13,6 +18,11 @@ class MediaSosialEditController extends Controller
     {
         $user = Auth::user();
         $mediaSosial = $user->mediaSosial;
+        if ($user->role === 'mentor') {
+            return Inertia::render('mentor/medsos/edit', [
+                'mediaSosial' => $mediaSosial,
+            ]);
+        }
         return Inertia::render('profile/medsos/edit', [
             'mediaSosial' => $mediaSosial,
         ]);
@@ -35,6 +45,10 @@ class MediaSosialEditController extends Controller
             $mediaSosial->update($validated);
         } else {
             $user->mediaSosial()->create($validated);
+        }
+        // Redirect sesuai role
+        if ($user->role === 'mentor') {
+            return redirect()->route('mentor.profile.show')->with('success', 'Data media sosial berhasil diperbarui');
         }
         return redirect()->route('profile.show')->with('success', 'Data media sosial berhasil diperbarui');
     }

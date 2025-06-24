@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025. Arifa N. Chan. All right Reserved
+ * This file is part of the SIPRIMA Magang Project.
+ * Developed with PhpStorm
+ */
+
 export default function Heading({ title, description }: { title: string; description?: string }) {
     return (
         <div className="mb-8 space-y-0.5">

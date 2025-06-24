@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025. Arifa N. Chan. All right Reserved
+ * This file is part of the SIPRIMA Magang Project.
+ * Developed with PhpStorm
+ */
+
 import { Head, Link } from '@inertiajs/react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,7 +54,7 @@ export default function ProfileShow({ user, profile, student, mediaSosial, docum
                         <button className="absolute top-2 right-2 text-xl">&times;</button>
                     </DialogClose>
                     {modalFile && (modalFile.match(/\.(jpg|jpeg|png)$/i)
-                        ? <img src={modalFile} alt="Preview Dokumen" className="max-h-[70vh] mx-auto" />
+                        ? <img src={modalFile} alt="Preview Dokumen" className="max-h-[80vh] mx-auto" />
                         : <iframe src={modalFile} title="Preview Dokumen" className="w-full min-h-[60vh]" />)}
                 </DialogContent>
             </Dialog>
