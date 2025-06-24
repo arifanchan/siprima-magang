@@ -14,9 +14,8 @@ dayjs.locale("id");
 
 const profileNavItems = [
     { title: 'Edit Data Pribadi', key: 'personal', href: '/mentor/profile/edit' },
-    { title: 'Edit Data Mentor', key: 'mentor', href: '/mentor/profile/edit' },
+    { title: 'Edit Data Mentor', key: 'mentor', href: '/mentor/mentor/edit' },
     { title: 'Edit Media Sosial', key: 'medsos', href: '/mentor/medsos/edit' },
-    { title: 'Edit Dokumen', key: 'documents', href: '/mentor/documents/edit' },
 ];
 
 export default function MentorProfileShow({ user, profile, mentor, mediaSosial, documents }: any) {

@@ -18,6 +18,14 @@ class ProfileEditController extends Controller
             abort(403, 'Unauthorized');
         }
         $profile = $user->profile;
+        // Render halaman edit sesuai role
+        if ($user->role === 'mentor') {
+            return Inertia::render('mentor/profile/edit', [
+                'user' => $user,
+                'profile' => $profile,
+            ]);
+        }
+        // Default: student/user
         return Inertia::render('profile/edit', [
             'user' => $user,
             'profile' => $profile,
@@ -33,41 +41,37 @@ class ProfileEditController extends Controller
         $profile = $user->profile;
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-            'phone' => 'required|string|max:20|unique:users,phone,' . $user->id,
-            'gender' => 'required|in:male,female',
-            'birth_date' => 'required|date',
-            'address' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'gender' => 'nullable|in:male,female',
+            'birth_date' => 'nullable|date',
+            'address' => 'nullable|string|max:255',
             'occupation' => 'nullable|string|max:255',
-            'identity_number' => 'required|string|max:32|unique:profiles,identity_number,' . ($profile ? $profile->id : 'NULL'),
+            'identity_number' => 'nullable|string|max:32',
             'photo_file' => 'nullable|image|max:2048',
         ]);
-
-        $user->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-        ]);
-
-        if (!$profile) {
-            $profile = new Profile(['user_id' => $user->id]);
-        }
-        $profile->gender = $validated['gender'];
-        $profile->birth_date = $validated['birth_date'];
-        $profile->address = $validated['address'];
-        $profile->occupation = $validated['occupation'];
-        $profile->identity_number = $validated['identity_number'];
-        if ($request->hasFile('photo_file')) {
-            if ($profile->photo_file) {
-                \Storage::delete('public/' . $profile->photo_file);
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->phone = $validated['phone'];
+        $user->save();
+        if ($profile) {
+            $profile->gender = $validated['gender'];
+            $profile->birth_date = $validated['birth_date'];
+            $profile->address = $validated['address'];
+            $profile->occupation = $validated['occupation'];
+            $profile->identity_number = $validated['identity_number'];
+            if ($request->hasFile('photo_file')) {
+                $file = $request->file('photo_file');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('users/' . $user->id . '/profile_photos', $filename, 'public');
+                $profile->photo_file = $path;
             }
-            $filename = now()->format('Y-m-d') . '_' . $request->file('photo_file')->getClientOriginalName();
-            $relativePath = 'users/' . $user->id . '/profile_photos/' . $filename;
-            $request->file('photo_file')->storeAs('users/' . $user->id . '/profile_photos', $filename, 'public');
-            $profile->photo_file = $relativePath;
+            $profile->save();
         }
-        $profile->save();
-
+        // Redirect sesuai role
+        if ($user->role === 'mentor') {
+            return redirect()->route('mentor.profile.show')->with('status', 'Data pribadi berhasil diperbarui.');
+        }
         return redirect()->route('profile.show')->with('status', 'Data pribadi berhasil diperbarui.');
     }
 }

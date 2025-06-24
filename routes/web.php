@@ -75,6 +75,8 @@ Route::middleware(['auth', 'can:isMentor'])->group(function () {
         ]);
     })->name('mentor.dashboard');
     Route::get('/mentor/profile', [\App\Http\Controllers\MentorProfileController::class, 'show'])->name('mentor.profile.show');
+    Route::get('/mentor/profile/edit', [\App\Http\Controllers\ProfileEditController::class, 'edit'])->name('mentor.profile.edit');
+    Route::post('/mentor/profile/edit', [\App\Http\Controllers\ProfileEditController::class, 'update'])->name('mentor.profile.update');
     // TODO: Tambahkan route lain untuk mentor jika diperlukan
 });
 
