@@ -84,4 +84,24 @@ class LogbookController extends Controller
             'internshipActivity' => $internshipActivity,
         ]);
     }
+
+    // Tambahkan method untuk mentor mengupdate status dan feedback logbook
+    public function feedbackByMentor(Request $request, $activityId, $logbookId)
+    {
+        $mentor = $request->user()->mentor;
+        $logbook = \App\Models\Logbook::findOrFail($logbookId);
+        $activity = $logbook->internshipActivity;
+        // Validasi hanya mentor pembimbing yang boleh update
+        if (!$mentor || !$activity || $activity->mentor_id !== $mentor->id) {
+            abort(403, 'Akses tidak diizinkan');
+        }
+        $validated = $request->validate([
+            'status' => 'required|in:pending,approved,rejected',
+            'feedback' => 'nullable|string',
+        ]);
+        $logbook->status = $validated['status'];
+        $logbook->feedback = $validated['feedback'];
+        $logbook->save();
+        return redirect()->back()->with('status', 'Feedback logbook berhasil disimpan.');
+    }
 }

@@ -32,7 +32,11 @@ export function AppSidebar() {
                 href: '/mentor/profile',
                 icon: UserIcon,
             },
-            // Tambahkan menu lain khusus mentor jika perlu
+            {
+                title: 'Daftar Bimbingan',
+                href: '/mentor/activities',
+                icon: Folder,
+            },
         ];
     } else {
         mainNavItems = [

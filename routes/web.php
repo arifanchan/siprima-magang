@@ -86,6 +86,184 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectIfStudent::class, 'can:i
     Route::post('/mentor/mentor/edit', [\App\Http\Controllers\MentorEditController::class, 'update'])->name('mentor.mentor.update');
     Route::get('/mentor/medsos/edit', [\App\Http\Controllers\MediaSosialEditController::class, 'edit'])->name('mentor.medsos.edit');
     Route::post('/mentor/medsos/edit', [\App\Http\Controllers\MediaSosialEditController::class, 'update'])->name('mentor.medsos.update');
+    // Daftar bimbingan aktif
+    Route::get('/mentor/activities', function () {
+        $mentor = auth()->user()->mentor;
+        $activities = $mentor
+            ? $mentor->internshipActivities()
+                ->with([
+                    'internshipApplication',
+                    'internshipApplication.student',
+                    'internshipApplication.student.user',
+                    'internshipApplication.student.profile',
+                ])
+                ->whereIn('status', ['aktif', 'berjalan', 'active', 'ongoing'])
+                ->orderByDesc('start_date')->get()
+            : collect();
+        // Paksa akses relasi dan konversi ke array agar relasi ikut di-serialize
+        $activitiesArr = $activities->map(function ($activity) {
+            $internshipApplication = $activity->internshipApplication;
+            $student = $internshipApplication?->student;
+            $user = $student?->user;
+            $profile = $student?->profile;
+            // return struktur lengkap
+            return [
+                ...$activity->toArray(),
+                'internshipApplication' => $internshipApplication ? [
+                    ...$internshipApplication->toArray(),
+                    'student' => $student ? [
+                        ...$student->toArray(),
+                        'user' => $user ? $user->toArray() : null,
+                        'profile' => $profile ? $profile->toArray() : null,
+                    ] : null,
+                ] : null,
+            ];
+        });
+        return Inertia::render('mentor/activities/index', [
+            'activities' => $activitiesArr,
+        ]);
+    })->name('mentor.activities.index');
+    // Riwayat bimbingan
+    Route::get('/mentor/activities/history', function () {
+        $mentor = auth()->user()->mentor;
+        $activities = $mentor
+            ? $mentor->internshipActivities()
+                ->with([
+                    'internshipApplication',
+                    'internshipApplication.student',
+                    'internshipApplication.student.user',
+                    'internshipApplication.student.profile',
+                ])
+                ->whereIn('status', ['selesai', 'batal', 'ditolak', 'finished', 'cancelled', 'rejected'])
+                ->orderByDesc('start_date')->get()
+            : collect();
+        // Paksa akses relasi agar ikut di-serialize
+        $activities->each(function ($activity) {
+            $activity->internshipApplication;
+            $activity->internshipApplication?->student;
+            $activity->internshipApplication?->student?->user;
+            $activity->internshipApplication?->student?->profile;
+        });
+        return Inertia::render('mentor/activities/history', [
+            'activities' => $activities,
+        ]);
+    })->name('mentor.activities.history');
+    // Detail aktivitas bimbingan untuk mentor
+    Route::get('/mentor/activities/{id}', function ($id) {
+        $mentor = auth()->user()->mentor;
+        $activity = \App\Models\InternshipActivity::with([
+            'internshipApplication',
+            'internshipApplication.student',
+            'internshipApplication.student.user',
+            'internshipApplication.student.profile',
+            'presences',
+            'logbooks',
+            'assignments',
+            'finalAssessment',
+        ])->findOrFail($id);
+        // Pastikan hanya mentor yang berhak bisa akses
+        if (!$mentor || $activity->mentor_id !== $mentor->id) {
+            abort(403, 'Akses tidak diizinkan');
+        }
+        $student = $activity->internshipApplication?->student;
+        // Statistik presensi
+        $presence_summary = [
+            'present' => $activity->presences->where('status', 'hadir')->count(),
+            'leave' => $activity->presences->where('status', 'izin')->count(),
+            'absent' => $activity->presences->where('status', 'alpa')->count(),
+        ];
+        // Statistik logbook
+        $logbook_summary = [
+            'filled_days' => $activity->logbooks->count(),
+            'total_days' => $activity->presences->count(),
+        ];
+        // Statistik tugas
+        $assignment_summary = [
+            'completed' => $activity->assignments->where('status', 'selesai')->count(),
+            'pending' => $activity->assignments->where('status', '!=', 'selesai')->count(),
+        ];
+        // Status laporan dan penilaian
+        $report_status = $activity->final_report ? 'Sudah diunggah' : 'Belum diunggah';
+        $final_assessment_status = $activity->finalAssessment ? 'Sudah dinilai' : 'Belum dinilai';
+        return Inertia::render('mentor/activities/[id]', [
+            'activity' => array_merge($activity->toArray(), [
+                'presence_summary' => $presence_summary,
+                'logbook_summary' => $logbook_summary,
+                'assignment_summary' => $assignment_summary,
+                'report_status' => $report_status,
+                'final_assessment_status' => $final_assessment_status,
+            ]),
+            'student' => $student,
+            'mentor' => $mentor,
+        ]);
+    })->name('mentor.activities.show');
+    // Profil lengkap mahasiswa pada aktivitas magang (untuk mentor)
+    Route::get('/mentor/activities/{id}/profile', [
+        App\Http\Controllers\InternshipActivityController::class,
+        'studentProfile'
+    ])->middleware(['auth'])->name('mentor.activities.student-profile');
+    // Presensi untuk mentor: detail presensi aktivitas
+    Route::get('/mentor/activities/{id}/presence', function ($id) {
+        $mentor = auth()->user()->mentor;
+        $activity = \App\Models\InternshipActivity::with([
+            'presences',
+        ])->findOrFail($id);
+        if (!$mentor || $activity->mentor_id !== $mentor->id) {
+            abort(403, 'Akses tidak diizinkan');
+        }
+        $presences = $activity->presences()->orderBy('date')->get();
+        return Inertia::render('mentor/activities/[id]/presence', [
+            'activity' => $activity,
+            'presences' => $presences,
+        ]);
+    })->name('mentor.activities.presence');
+    // Logbook untuk mentor: detail logbook aktivitas
+    Route::get('/mentor/activities/{id}/logbook', function ($id) {
+        $mentor = auth()->user()->mentor;
+        $activity = \App\Models\InternshipActivity::with([
+            'logbooks',
+            'internshipApplication.student.user',
+        ])->findOrFail($id);
+        if (!$mentor || $activity->mentor_id !== $mentor->id) {
+            abort(403, 'Akses tidak diizinkan');
+        }
+        $logbooks = $activity->logbooks()->orderByDesc('date')->get();
+        $student = $activity->internshipApplication?->student;
+        return Inertia::render('mentor/activities/[id]/logbook', [
+            'activity' => $activity,
+            'logbooks' => $logbooks,
+            'student' => $student,
+        ]);
+    })->name('mentor.activities.logbook');
+    // Assignment routes for mentor
+    Route::middleware(['auth', 'can:isMentor'])->prefix('mentor/activities/{activity}')->group(function () {
+        Route::get('/assignments/create', [\App\Http\Controllers\MentorAssignmentController::class, 'create'])->name('mentor.activities.assignments.create');
+        Route::post('/assignments', [\App\Http\Controllers\MentorAssignmentController::class, 'store'])->name('mentor.activities.assignments.store');
+        Route::get('/assignments', [\App\Http\Controllers\MentorAssignmentController::class, 'activityAssignments'])->name('mentor.activities.assignments');
+        Route::get('/assignments/{assignment}', [\App\Http\Controllers\MentorAssignmentController::class, 'show'])->name('mentor.activities.assignments.show');
+        Route::get('/assignments/{assignment}/edit', [\App\Http\Controllers\MentorAssignmentController::class, 'edit'])->name('mentor.activities.assignments.edit');
+        Route::put('/assignments/{assignment}', [\App\Http\Controllers\MentorAssignmentController::class, 'update'])->name('mentor.activities.assignments.update');
+        Route::delete('/assignments/{assignment}', [\App\Http\Controllers\MentorAssignmentController::class, 'destroy'])->name('mentor.activities.assignments.destroy');
+    });
+    // Route PATCH untuk feedback mentor pada logbook
+    Route::patch('/mentor/activities/{activity}/logbook/{logbook}/feedback', [\App\Http\Controllers\LogbookController::class, 'feedbackByMentor'])
+        ->middleware(['auth', 'can:isMentor'])
+        ->name('mentor.activities.logbook.feedback');
+    // Route detail logbook mentor
+    Route::get('/mentor/activities/{activity}/logbook/{logbook}', function ($activity, $logbook) {
+        $mentor = auth()->user()->mentor;
+        $logbookModel = \App\Models\Logbook::findOrFail($logbook);
+        $activityModel = $logbookModel->internshipActivity;
+        if (!$mentor || !$activityModel || $activityModel->mentor_id !== $mentor->id) {
+            abort(403, 'Akses tidak diizinkan');
+        }
+        $student = $activityModel->internshipApplication?->student;
+        return Inertia::render('mentor/activities/[id]/logbook/[logbookId]', [
+            'logbook' => $logbookModel,
+            'activity' => $activityModel,
+            'student' => $student,
+        ]);
+    })->middleware(['auth', 'can:isMentor'])->name('mentor.activities.logbook.show');
     // TODO: Tambahkan route lain untuk mentor jika diperlukan
 });
 

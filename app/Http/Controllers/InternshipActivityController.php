@@ -173,4 +173,27 @@ class InternshipActivityController extends Controller
             'finalAssessment' => $activity->finalAssessment,
         ]);
     }
+
+    /**
+     * Show the profile of the student for a specific internship activity (for mentor view)
+     */
+    public function studentProfile($id)
+    {
+        $mentor = auth()->user()->mentor;
+        $activity = \App\Models\InternshipActivity::with([
+            'internshipApplication',
+            'internshipApplication.student',
+            'internshipApplication.student.user.mediaSosial',
+            'internshipApplication.student.profile',
+        ])->findOrFail($id);
+        // Only allow mentor assigned to this activity
+        if (!$mentor || $activity->mentor_id !== $mentor->id) {
+            abort(403, 'Akses tidak diizinkan');
+        }
+        $student = $activity->internshipApplication?->student;
+        return Inertia::render('mentor/activities/[id]/profile', [
+            'activity' => $activity,
+            'student' => $student,
+        ]);
+    }
 }
