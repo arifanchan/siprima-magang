@@ -115,7 +115,7 @@ export default function MentorLogbookDetailPage() {
                                 <div>
                                     <label className="block text-sm font-medium mb-1">Bukti Kegiatan</label>
                                     {logbook.evidence_harian ? (
-                                        <Button size="sm" variant="outline" onClick={() => { setModalFile(getEvidenceUrl(logbook.evidence_harian)); setModalOpen(true); }}>
+                                        <Button size="sm" variant="outline" type="button" onClick={() => { setModalFile(getEvidenceUrl(logbook.evidence_harian)); setModalOpen(true); }}>
                                             <Eye size={16} className="mr-1" /> Preview
                                         </Button>
                                     ) : <span className="text-gray-400">Tidak ada bukti</span>}
@@ -148,9 +148,14 @@ export default function MentorLogbookDetailPage() {
                                         placeholder="Tulis feedback atau catatan untuk mahasiswa..."
                                     />
                                 </div>
-                                <div className="flex justify-end">
+                                <div className="flex justify-end gap-2 mt-4">
                                     <Button type="submit" disabled={saving} className="px-6">
                                         {saving ? 'Menyimpan...' : 'Simpan Feedback'}
+                                    </Button>
+                                    <Button asChild variant="secondary">
+                                        <Link href={`/mentor/activities/${activity?.id}/logbook`}>
+                                            Kembali ke Daftar Logbook
+                                        </Link>
                                     </Button>
                                 </div>
                             </form>

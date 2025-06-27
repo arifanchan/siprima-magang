@@ -66,26 +66,44 @@ class InternshipActivity extends Model
     public function getPresencePercentAttribute()
     {
         $totalDays = 0;
+        $presenceDays = 0;
         if ($this->start_date && $this->end_date) {
             $start = \Carbon\Carbon::parse($this->start_date);
             $end = \Carbon\Carbon::parse($this->end_date);
-            $totalDays = $start->diffInWeekdays($end) + 1; // Hanya hari kerja (Senin-Jumat)
+            $period = \Carbon\CarbonPeriod::create($start, $end);
+            foreach ($period as $date) {
+                if ($date->isWeekday()) {
+                    $totalDays++;
+                    $presence = $this->presences()->where('date', $date->toDateString())->first();
+                    if ($presence && $presence->check_in && $presence->check_out) {
+                        $presenceDays++;
+                    }
+                }
+            }
         }
-        $presenceCount = $this->presences()->count();
-        return $totalDays > 0 ? round(($presenceCount / $totalDays) * 100) : 0;
+        return $totalDays > 0 ? round(($presenceDays / $totalDays) * 100) : 0;
     }
 
     // Progress persentase logbook
     public function getLogbookPercentAttribute()
     {
         $totalDays = 0;
+        $logbookDays = 0;
         if ($this->start_date && $this->end_date) {
             $start = \Carbon\Carbon::parse($this->start_date);
             $end = \Carbon\Carbon::parse($this->end_date);
-            $totalDays = $start->diffInWeekdays($end) + 1;
+            $period = \Carbon\CarbonPeriod::create($start, $end);
+            foreach ($period as $date) {
+                if ($date->isWeekday()) {
+                    $totalDays++;
+                    $logbook = $this->logbooks()->where('date', $date->toDateString())->first();
+                    if ($logbook) {
+                        $logbookDays++;
+                    }
+                }
+            }
         }
-        $logbookCount = $this->logbooks()->count();
-        return $totalDays > 0 ? round(($logbookCount / $totalDays) * 100) : 0;
+        return $totalDays > 0 ? round(($logbookDays / $totalDays) * 100) : 0;
     }
 
     // Progress persentase tugas

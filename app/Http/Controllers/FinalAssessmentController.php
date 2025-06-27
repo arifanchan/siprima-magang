@@ -36,11 +36,10 @@ class FinalAssessmentController extends Controller
         return response()->json($assessment);
     }
 
-    // Store a new final assessment (usually not used, created automatically)
-    public function store(Request $request)
+    // Store a new final assessment (mentor)
+    public function store(Request $request, $id)
     {
         $validated = $request->validate([
-            'internship_activity_id' => 'required|exists:internship_activities,id|unique:final_assessments,internship_activity_id',
             'assessment_date' => 'nullable|date',
             'discipline' => 'nullable|integer|min:0|max:100',
             'responsibility' => 'nullable|integer|min:0|max:100',
@@ -48,17 +47,31 @@ class FinalAssessmentController extends Controller
             'initiative' => 'nullable|integer|min:0|max:100',
             'communication' => 'nullable|integer|min:0|max:100',
             'technical_skill' => 'nullable|integer|min:0|max:100',
-            'final_score' => 'nullable|integer|min:0|max:100',
             'comment' => 'nullable|string',
         ]);
+        $fields = [
+            $validated['discipline'] ?? 0,
+            $validated['responsibility'] ?? 0,
+            $validated['teamwork'] ?? 0,
+            $validated['initiative'] ?? 0,
+            $validated['communication'] ?? 0,
+            $validated['technical_skill'] ?? 0,
+        ];
+        $final_score = round(array_sum($fields) / count($fields));
+        $validated['final_score'] = $final_score;
+        $validated['internship_activity_id'] = $id;
+        // Pastikan belum ada assessment untuk activity ini
+        if (\App\Models\FinalAssessment::where('internship_activity_id', $id)->exists()) {
+            return response()->json(['message' => 'Penilaian akhir sudah ada untuk aktivitas ini.'], 422);
+        }
         $assessment = FinalAssessment::create($validated);
         return response()->json($assessment, 201);
     }
 
-    // Update an existing final assessment
+    // Update an existing final assessment (mentor)
     public function update(Request $request, $id)
     {
-        $assessment = FinalAssessment::findOrFail($id);
+        $assessment = FinalAssessment::where('internship_activity_id', $id)->firstOrFail();
         $validated = $request->validate([
             'assessment_date' => 'nullable|date',
             'discipline' => 'nullable|integer|min:0|max:100',
@@ -67,9 +80,18 @@ class FinalAssessmentController extends Controller
             'initiative' => 'nullable|integer|min:0|max:100',
             'communication' => 'nullable|integer|min:0|max:100',
             'technical_skill' => 'nullable|integer|min:0|max:100',
-            'final_score' => 'nullable|integer|min:0|max:100',
             'comment' => 'nullable|string',
         ]);
+        $fields = [
+            $validated['discipline'] ?? $assessment->discipline ?? 0,
+            $validated['responsibility'] ?? $assessment->responsibility ?? 0,
+            $validated['teamwork'] ?? $assessment->teamwork ?? 0,
+            $validated['initiative'] ?? $assessment->initiative ?? 0,
+            $validated['communication'] ?? $assessment->communication ?? 0,
+            $validated['technical_skill'] ?? $assessment->technical_skill ?? 0,
+        ];
+        $final_score = round(array_sum($fields) / count($fields));
+        $validated['final_score'] = $final_score;
         $assessment->update($validated);
         return response()->json($assessment);
     }

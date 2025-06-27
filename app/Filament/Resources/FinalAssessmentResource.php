@@ -36,7 +36,39 @@ class FinalAssessmentResource extends Resource
             Forms\Components\TextInput::make('initiative')->label('Initiative')->numeric()->minValue(0)->maxValue(100),
             Forms\Components\TextInput::make('communication')->label('Communication')->numeric()->minValue(0)->maxValue(100),
             Forms\Components\TextInput::make('technical_skill')->label('Technical Skill')->numeric()->minValue(0)->maxValue(100),
-            Forms\Components\TextInput::make('final_score')->label('Final Score')->numeric()->minValue(0)->maxValue(100),
+            Forms\Components\TextInput::make('final_score')
+                ->label('Final Score')
+                ->numeric()
+                ->minValue(0)
+                ->maxValue(100)
+                ->readOnly()
+                ->dehydrated()
+                ->afterStateHydrated(function ($component, $state, $record) {
+                    // Saat edit, hitung ulang final_score dari aspek jika ada
+                    if ($record) {
+                        $fields = [
+                            $record->discipline ?? 0,
+                            $record->responsibility ?? 0,
+                            $record->teamwork ?? 0,
+                            $record->initiative ?? 0,
+                            $record->communication ?? 0,
+                            $record->technical_skill ?? 0,
+                        ];
+                        $component->state(round(array_sum($fields) / count($fields)));
+                    }
+                })
+                ->afterStateUpdated(function ($state, callable $set, $get) {
+                    // Hitung ulang jika ada perubahan aspek
+                    $fields = [
+                        (int) $get('discipline') ?? 0,
+                        (int) $get('responsibility') ?? 0,
+                        (int) $get('teamwork') ?? 0,
+                        (int) $get('initiative') ?? 0,
+                        (int) $get('communication') ?? 0,
+                        (int) $get('technical_skill') ?? 0,
+                    ];
+                    $set('final_score', round(array_sum($fields) / count($fields)));
+                }),
             Forms\Components\Textarea::make('comment')->label('Comment'),
             // DSS fields (optional/hidden)
             Forms\Components\TextInput::make('dss_score')->label('DSS Score')->visible(false),

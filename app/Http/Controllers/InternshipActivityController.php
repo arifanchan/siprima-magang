@@ -196,4 +196,23 @@ class InternshipActivityController extends Controller
             'student' => $student,
         ]);
     }
+
+    /**
+     * Update feedback laporan akhir oleh mentor
+     */
+    public function updateReportFeedback(Request $request, $id)
+    {
+        $activity = InternshipActivity::findOrFail($id);
+        $user = auth()->user();
+        // Otorisasi: hanya mentor pembimbing
+        if ($user->role !== 'mentor' || $activity->mentor_id !== optional($user->mentor)->id) {
+            abort(403);
+        }
+        $validated = $request->validate([
+            'feedback' => 'nullable|string|max:2000',
+        ]);
+        $activity->feedback = $validated['feedback'];
+        $activity->save();
+        return redirect()->back()->with('status', 'Feedback berhasil disimpan.');
+    }
 }

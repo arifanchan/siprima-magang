@@ -70,7 +70,7 @@ class MentorAssignmentController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'required|date',
-            'status' => 'nullable|string',
+            'status' => 'nullable|in:pending,in_progress,submitted,reviewed,completed',
             'evidence_file' => 'nullable|file|max:8192',
         ]);
         $validated['internship_activity_id'] = $activityId;
@@ -113,7 +113,7 @@ class MentorAssignmentController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'required|date',
-            'status' => 'nullable|string',
+            'status' => 'nullable|in:pending,in_progress,submitted,reviewed,completed',
             'evidence_file' => 'nullable|file|max:8192',
         ]);
         if ($request->hasFile('evidence_file')) {

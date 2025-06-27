@@ -47,7 +47,24 @@ export default function MentorAssignmentDetailPage() {
 
   function handleApprove() {
     setLoading(true);
-    router.put(`/mentor/activities/${activity.id}/assignments/${assignment.id}`, { status: 'completed' }, {
+    router.put(`/mentor/activities/${activity.id}/assignments/${assignment.id}`, {
+      title: assignment.title,
+      description: assignment.description,
+      due_date: assignment.due_date,
+      status: 'completed',
+    }, {
+      onFinish: () => setLoading(false),
+    });
+  }
+
+  function handleReview() {
+    setLoading(true);
+    router.put(`/mentor/activities/${activity.id}/assignments/${assignment.id}`, {
+      title: assignment.title,
+      description: assignment.description,
+      due_date: assignment.due_date,
+      status: 'reviewed',
+    }, {
       onFinish: () => setLoading(false),
     });
   }
@@ -124,9 +141,12 @@ export default function MentorAssignmentDetailPage() {
                     </span>
                   </div>
                   <div className="mb-6">
-                    <div className="font-semibold mb-1 text-primary-700 dark:text-primary-200">Deskripsi Tugas</div>
+                    <div className="font-semibold mb-1 text-primary-700 dark:text-primary-200">Deskripsi Tugas / Feedback Revisi</div>
                     <div className="whitespace-pre-line text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900 rounded p-3 border border-gray-100 dark:border-gray-800 shadow-sm">
                       {assignment.description ? assignment.description.replace(/\\n/g, '\n') : '-'}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      <span>Gunakan kolom deskripsi ini untuk memberikan feedback revisi kepada mahasiswa. Mahasiswa akan membaca deskripsi terbaru sebagai instruksi revisi.</span>
                     </div>
                   </div>
                   {assignment.evidence_file && (
@@ -167,7 +187,12 @@ export default function MentorAssignmentDetailPage() {
                     <Button size="sm" variant="secondary" onClick={() => setEditMode(true)}>
                       Edit Tugas
                     </Button>
-                    {assignment.status !== 'completed' && (
+                    {assignment.status === 'submitted' && (
+                      <Button size="sm" variant="warning" onClick={handleReview} disabled={loading}>
+                        Review / Minta Revisi
+                      </Button>
+                    )}
+                    {(assignment.status === 'submitted' || assignment.status === 'reviewed') && (
                       <Button size="sm" variant="success" onClick={handleApprove} disabled={loading}>
                         Approve / Tandai Selesai
                       </Button>

@@ -4,16 +4,15 @@
  * Developed with PhpStorm
  */
 
-import AppLogoIcon from './app-logo-icon';
-
 export default function AppLogo() {
     return (
         <>
-            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                <AppLogoIcon className="size-5 fill-current text-white dark:text-black" />
-            </div>
-            <div className="ml-1 grid flex-1 text-left text-sm">
-                <span className="mb-0.5 truncate leading-tight font-semibold">Laravel Starter Kit</span>
+            <img src="/kementan.svg" alt="Logo" className="size-8 rounded-md object-contain" />
+            <div className="ml-1 grid flex-1 text-left">
+                {/*<span style={{ fontFamily: 'BodoniFLF, serif', letterSpacing: '1px', color: '#cf9921' }} className="font-extrabold text-lg leading-tight">SIPRIMA</span>*/}
+                {/*<span style={{ fontFamily: 'BodoniFLF, serif', color: '#cf9921' }} className="-mt-1 text-xs font-medium">M a g a n g</span>*/}
+                <span style={{ fontFamily: 'BodoniFLF, serif', letterSpacing: '1px'  }} className="font-extrabold text-lg leading-tight">SIPRIMA</span>
+                <span style={{ fontFamily: 'BodoniFLF, serif', }} className="-mt-1 text-xs font-medium">M a g a n g</span>
             </div>
         </>
     );

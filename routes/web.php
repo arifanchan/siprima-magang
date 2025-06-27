@@ -63,22 +63,7 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectIfMentor::class, 'can:is
 
 // Mentor dashboard & pages
 Route::middleware(['auth', \App\Http\Middleware\RedirectIfStudent::class, 'can:isMentor'])->group(function () {
-    Route::get('/mentor/dashboard', function () {
-        $mentor = auth()->user()->mentor;
-        $students = $mentor ? $mentor->internshipActivities()->with(['internshipApplication.student.user'])->get()->map(function ($activity) {
-            $student = $activity->internshipApplication->student;
-            return [
-                'id' => $student->id,
-                'user' => $student->user,
-                'university' => $student->university,
-                'study_program' => $student->study_program,
-                'internship_period' => $activity->start_date . ' - ' . $activity->end_date,
-            ];
-        }) : collect();
-        return Inertia::render('mentor/dashboard', [
-            'students' => $students,
-        ]);
-    })->name('mentor.dashboard');
+    Route::get('/mentor/dashboard', [\App\Http\Controllers\MentorDashboardController::class, 'index'])->name('mentor.dashboard');
     Route::get('/mentor/profile', [\App\Http\Controllers\MentorProfileController::class, 'show'])->name('mentor.profile.show');
     Route::get('/mentor/profile/edit', [\App\Http\Controllers\ProfileEditController::class, 'edit'])->name('mentor.profile.edit');
     Route::post('/mentor/profile/edit', [\App\Http\Controllers\ProfileEditController::class, 'update'])->name('mentor.profile.update');
@@ -264,6 +249,49 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectIfStudent::class, 'can:i
             'student' => $student,
         ]);
     })->middleware(['auth', 'can:isMentor'])->name('mentor.activities.logbook.show');
+    // Route untuk mentor mengisi feedback laporan akhir
+    Route::post('/mentor/activities/{id}/report/feedback', [\App\Http\Controllers\InternshipActivityController::class, 'updateReportFeedback'])->name('mentor.activities.report.feedback');
+    // Route GET untuk halaman report mentor
+    Route::get('/mentor/activities/{id}/report', function ($id) {
+        $mentor = auth()->user()->mentor;
+        $activity = \App\Models\InternshipActivity::with([
+            'internshipApplication.student.user',
+            'mentor.user',
+        ])->findOrFail($id);
+        if (!$mentor || $activity->mentor_id !== $mentor->id) {
+            abort(403, 'Akses tidak diizinkan');
+        }
+        $student = $activity->internshipApplication?->student;
+        // Debug: log data yang dikirim ke frontend
+        \Log::info('Mentor Report Data', $activity->toArray());
+        // Pastikan data yang dikirim ke frontend sudah array (bukan Eloquent model)
+        return Inertia::render('mentor/activities/[id]/report', [
+            'activity' => $activity->toArray(),
+            'student' => $student ? $student->toArray() : null,
+        ]);
+    })->middleware(['auth', 'can:isMentor'])->name('mentor.activities.report');
+    // Route untuk mentor mengisi penilaian akhir
+    Route::middleware(['auth', 'can:isMentor'])->prefix('mentor/activities/{id}')->group(function () {
+        Route::post('/final-assessment', [\App\Http\Controllers\FinalAssessmentController::class, 'store']);
+        Route::put('/final-assessment', [\App\Http\Controllers\FinalAssessmentController::class, 'update']);
+    });
+    // Route GET untuk halaman final assessment mentor
+    Route::get('/mentor/activities/{id}/final-assessment', function ($id) {
+        $mentor = auth()->user()->mentor;
+        $activity = \App\Models\InternshipActivity::with([
+            'internshipApplication.student.user',
+            'mentor.user',
+            'finalAssessment',
+        ])->findOrFail($id);
+        if (!$mentor || $activity->mentor_id !== $mentor->id) {
+            abort(403, 'Akses tidak diizinkan');
+        }
+        $finalAssessment = $activity->finalAssessment;
+        return Inertia::render('mentor/activities/[id]/final-assessment', [
+            'activity' => $activity,
+            'finalAssessment' => $finalAssessment,
+        ]);
+    })->middleware(['auth', 'can:isMentor'])->name('mentor.activities.final-assessment');
     // TODO: Tambahkan route lain untuk mentor jika diperlukan
 });
 

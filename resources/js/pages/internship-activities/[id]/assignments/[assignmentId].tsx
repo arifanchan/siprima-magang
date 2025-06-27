@@ -124,7 +124,7 @@ export default function AssignmentDetailPage() {
                                         className="w-full border rounded px-3 py-2 text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900"
                                         value={data.output}
                                         onChange={e => setData('output', e.target.value)}
-                                        disabled={assignment.status !== 'in_progress' || isLate}
+                                        disabled={!(assignment.status === 'in_progress' || assignment.status === 'reviewed') || isLate}
                                         rows={3}
                                     />
                                     {errors.output && <div className="text-red-600 text-xs mt-1">{errors.output}</div>}
@@ -137,7 +137,7 @@ export default function AssignmentDetailPage() {
                                         name="evidence_file"
                                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
                                         onChange={e => setData('evidence_file', e.target.files?.[0])}
-                                        disabled={assignment.status !== 'in_progress' || isLate}
+                                        disabled={!(assignment.status === 'in_progress' || assignment.status === 'reviewed') || isLate}
                                     />
                                     {errors.evidence_file && <div className="text-red-600 text-xs mt-1">{errors.evidence_file}</div>}
                                     {/* Jika sudah pernah upload, tampilkan link download */}
@@ -156,7 +156,7 @@ export default function AssignmentDetailPage() {
                                 </div>
                                 {/* Tombol Kerjakan/Simpan */}
                                 <div className="flex gap-2 mt-4">
-                                    {assignment.status !== 'in_progress' ? (
+                                    {assignment.status !== 'in_progress' && assignment.status !== 'reviewed' ? (
                                         <Button
                                             type="button"
                                             variant="secondary"

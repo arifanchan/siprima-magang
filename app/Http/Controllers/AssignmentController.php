@@ -36,7 +36,7 @@ class AssignmentController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'required|date',
-            'status' => 'nullable|string',
+            'status' => 'nullable|in:pending,in_progress,submitted,reviewed,completed',
             'evidence_file' => 'nullable|file|max:8192',
         ]);
 
@@ -71,7 +71,7 @@ class AssignmentController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'required|date',
-            'status' => 'nullable|string',
+            'status' => 'nullable|in:pending,in_progress,submitted,reviewed,completed',
             'evidence_file' => 'nullable|file|max:8192',
         ]);
         if ($request->hasFile('evidence_file')) {
