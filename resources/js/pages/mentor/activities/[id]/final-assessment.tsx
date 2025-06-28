@@ -16,9 +16,9 @@ const subNavItems = (id: number) => [
   { key: 'summary', title: 'Ringkasan', href: `/mentor/activities/${id}` },
   { key: 'profile', title: 'Profil Mahasiswa', href: `/mentor/activities/${id}/profile` },
   { key: 'presence', title: 'Presensi', href: `/mentor/activities/${id}/presence` },
-  { key: 'logbook', title: 'Logbook', href: `/mentor/activities/${id}/logbook` },
   { key: 'assignments', title: 'Tugas', href: `/mentor/activities/${id}/assignments` },
-  { key: 'report', title: 'Laporan', href: `/mentor/activities/${id}/report` },
+  { key: 'logbook', title: 'Logbook', href: `/mentor/activities/${id}/logbook` },
+    { key: 'report', title: 'Laporan', href: `/mentor/activities/${id}/report` },
   { key: 'final-assessment', title: 'Penilaian Akhir', href: `/mentor/activities/${id}/final-assessment` },
 ];
 

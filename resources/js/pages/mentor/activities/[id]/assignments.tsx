@@ -11,6 +11,9 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import dayjs from 'dayjs';
 import 'dayjs/locale/id';
+import { exportCSV, exportPDF, printTable } from '@/utils/exportUtils';
+import { Download } from 'lucide-react';
+
 dayjs.locale('id');
 
 export default function MentorAssignmentsPage() {
@@ -25,9 +28,9 @@ export default function MentorAssignmentsPage() {
     { key: 'summary', title: 'Ringkasan', href: `/mentor/activities/${activity?.id}` },
     { key: 'profile', title: 'Profil Mahasiswa', href: `/mentor/activities/${activity?.id}/profile` },
     { key: 'presence', title: 'Presensi', href: `/mentor/activities/${activity?.id}/presence` },
-    { key: 'logbook', title: 'Logbook', href: `/mentor/activities/${activity?.id}/logbook` },
     { key: 'assignments', title: 'Tugas', href: `/mentor/activities/${activity?.id}/assignments` },
-    { key: 'report', title: 'Laporan', href: `/mentor/activities/${activity?.id}/report` },
+    { key: 'logbook', title: 'Logbook', href: `/mentor/activities/${activity?.id}/logbook` },
+      { key: 'report', title: 'Laporan', href: `/mentor/activities/${activity?.id}/report` },
     { key: 'final-assessment', title: 'Penilaian Akhir', href: `/mentor/activities/${activity?.id}/final-assessment` },
   ];
 
@@ -54,6 +57,50 @@ export default function MentorAssignmentsPage() {
     });
     return data;
   }, [assignments, search, sortKey, sortAsc]);
+
+  // Export ke CSV
+  function handleExportCSV() {
+    const header = ['No', 'Judul', 'Dibuat', 'Jatuh Tempo', 'Status'];
+    const rows = processedAssignments.map((a: any, idx: number) => [
+      idx + 1,
+      a.title,
+      a.created_at ? dayjs(a.created_at).format('D MMMM YYYY') : '-',
+      a.due_date ? dayjs(a.due_date).format('D MMMM YYYY') : '-',
+      a.status
+    ]);
+    exportCSV({
+      header,
+      rows,
+      filename: `tugas_${activity?.id}_${dayjs().format('MMMM_YYYY')}.csv`
+    });
+  }
+
+  // Export ke PDF
+  function handleExportPDF() {
+    const header = ['No', 'Judul', 'Dibuat', 'Jatuh Tempo', 'Status'];
+    const rows = processedAssignments.map((a: any, idx: number) => [
+      idx + 1,
+      a.title,
+      a.created_at ? dayjs(a.created_at).format('D MMMM YYYY') : '-',
+      a.due_date ? dayjs(a.due_date).format('D MMMM YYYY') : '-',
+      a.status
+    ]);
+    exportPDF({
+      header,
+      rows,
+      filename: `tugas_${activity?.id}_${dayjs().format('MMMM_YYYY')}.pdf`,
+      title: 'Daftar Tugas Mahasiswa',
+      startY: 20
+    });
+  }
+
+  // Print table
+  function handlePrintTable() {
+    printTable({
+      elementId: 'assignments-table-print',
+      title: 'Daftar Tugas Mahasiswa'
+    });
+  }
 
   return (
     <AppLayout breadcrumbs={[
@@ -85,6 +132,23 @@ export default function MentorAssignmentsPage() {
           </aside>
           <main className="flex-1">
             <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <div className="flex gap-2 flex-wrap">
+                <Button size="sm" variant="outline" onClick={handleExportCSV} className="flex items-center gap-1">
+                  <Download className="w-4 h-4" /> Export CSV
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleExportPDF} className="flex items-center gap-1">
+                  <svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' /></svg> PDF
+                </Button>
+                <Button size="sm" variant="outline" onClick={handlePrintTable} className="flex items-center gap-1">
+                  <svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 9V2h12v7M6 18v4h12v-4M6 14h12' /></svg> Print
+                </Button>
+              </div>
+              <Button asChild size="sm" variant="primary" className="font-semibold flex items-center gap-2">
+                <Link href={`/mentor/activities/${activity?.id}/assignments/create`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  <span>Buat Tugas Baru</span>
+                </Link>
+              </Button>
               <input
                 type="text"
                 placeholder="Cari judul atau deskripsi tugas..."
@@ -92,11 +156,8 @@ export default function MentorAssignmentsPage() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
-              <Button asChild size="sm" variant="primary" className="font-semibold">
-                <Link href={`/mentor/activities/${activity?.id}/assignments/create`}>+ Buat Tugas</Link>
-              </Button>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto" id="assignments-table-print">
               <table className="min-w-full border text-sm bg-white dark:bg-gray-900">
                 <thead>
                   <tr className="bg-gray-100 dark:bg-gray-800">

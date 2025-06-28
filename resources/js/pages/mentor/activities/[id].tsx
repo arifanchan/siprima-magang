@@ -32,9 +32,9 @@ export default function MentorActivityDetail() {
     { key: 'summary', title: 'Ringkasan', href: `/mentor/activities/${activity?.id}` },
     { key: 'profile', title: 'Profil Mahasiswa', href: `/mentor/activities/${activity?.id}/profile` },
     { key: 'presence', title: 'Presensi', href: `/mentor/activities/${activity?.id}/presence` },
-    { key: 'logbook', title: 'Logbook', href: `/mentor/activities/${activity?.id}/logbook` },
     { key: 'assignments', title: 'Tugas', href: `/mentor/activities/${activity?.id}/assignments` },
-    { key: 'report', title: 'Laporan', href: `/mentor/activities/${activity?.id}/report` },
+    { key: 'logbook', title: 'Logbook', href: `/mentor/activities/${activity?.id}/logbook` },
+      { key: 'report', title: 'Laporan', href: `/mentor/activities/${activity?.id}/report` },
     { key: 'final-assessment', title: 'Penilaian Akhir', href: `/mentor/activities/${activity?.id}/final-assessment` },
   ];
 

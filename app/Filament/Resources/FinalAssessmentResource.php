@@ -20,7 +20,8 @@ class FinalAssessmentResource extends Resource
 {
     protected static ?string $model = FinalAssessment::class;
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
-
+    protected static ?string $navigationGroup = 'Internship';
+    protected static ?int $navigationSort = 6;
     public static function form(Form $form): Form
     {
         return $form->schema([

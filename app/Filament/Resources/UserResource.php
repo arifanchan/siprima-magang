@@ -18,12 +18,16 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use App\Filament\Resources\UserResource\Pages;
+use Filament\Tables\Actions\ExportBulkAction;
+use App\Filament\Exports\UserExporter;
+
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
     protected static ?string $navigationIcon = 'heroicon-o-user';
     protected static ?string $navigationGroup = 'Master Data';
+    protected static ?int $navigationSort = 7;
 
     public static function form(Form $form): Form
     {
@@ -158,6 +162,7 @@ class UserResource extends Resource
         ->bulkActions([
             Tables\Actions\BulkActionGroup::make([
                 Tables\Actions\DeleteBulkAction::make(),
+                ExportBulkAction::make()->exporter(UserExporter::class),
             ]),
         ]);
     }

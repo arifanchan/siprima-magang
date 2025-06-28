@@ -18,6 +18,7 @@ class MentorDashboardController extends Controller
     {
         $mentor = auth()->user()->mentor;
         $students = collect();
+        $notifications = [];
         if ($mentor) {
             $activities = $mentor->internshipActivities()
                 ->where('status', 'active')
@@ -50,12 +51,15 @@ class MentorDashboardController extends Controller
                     'final_report_percent' => $activity->final_report ? 100 : 0,
                 ];
             })->filter(fn($s) => $s['id']);
+            // Ambil notifikasi dari user yang terkait dengan mentor
+            $notifications = $mentor->user->notifications ? $mentor->user->notifications->pluck('data.message')->toArray() : [];
         }
         return Inertia::render('mentor/dashboard', [
             'students' => $students->values(),
             'auth' => [
                 'user' => auth()->user(),
             ],
+            'notifications' => $notifications,
         ]);
     }
 }

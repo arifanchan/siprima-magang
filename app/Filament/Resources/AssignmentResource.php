@@ -22,7 +22,8 @@ class AssignmentResource extends Resource
     protected static ?string $model = Assignment::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+    protected static ?string $navigationGroup = 'Internship';
+    protected static ?int $navigationSort = 4;
     public static function form(Form $form): Form
     {
         return $form

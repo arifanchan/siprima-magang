@@ -23,6 +23,8 @@ class InternshipActivityResource extends Resource
     protected static ?string $model = InternshipActivity::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Internship';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {

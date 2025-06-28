@@ -19,6 +19,8 @@ import 'dayjs/locale/id';
 import FilePreviewButton from '@/components/ui/file-preview-button';
 import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
 import { Eye } from 'lucide-react';
+import { exportCSV, exportPDF, printTable } from '@/utils/exportUtils';
+import { Download } from 'lucide-react';
 
 const breadcrumbs = (activity: any): BreadcrumbItem[] => [
     { title: 'Aktivitas Magang', href: '/internship-activities' },
@@ -106,6 +108,48 @@ export default function InternshipLogbookPage() {
         setShowForm(false);
     };
 
+    // Export ke CSV
+    function handleExportCSV() {
+        const header = ['Tanggal', 'Judul Kegiatan', 'Status', 'Feedback'];
+        const rows = filteredLogbooks.map((item: any) => [
+            item.date ? formatTanggalIndo(item.date) : '-',
+            item.activity,
+            item.status,
+            item.feedback || '-'
+        ]);
+        exportCSV({
+            header,
+            rows,
+            filename: `logbook_${internshipActivity?.id || 'magang'}_${dayjs().format('MMMM_YYYY')}.csv`
+        });
+    }
+
+    // Export ke PDF
+    function handleExportPDF() {
+        const header = ['Tanggal', 'Judul Kegiatan', 'Status', 'Feedback'];
+        const rows = filteredLogbooks.map((item: any) => [
+            item.date ? formatTanggalIndo(item.date) : '-',
+            item.activity,
+            item.status,
+            item.feedback || '-'
+        ]);
+        exportPDF({
+            header,
+            rows,
+            filename: `logbook_${internshipActivity?.id || 'magang'}_${dayjs().format('MMMM_YYYY')}.pdf`,
+            title: 'Logbook Harian',
+            startY: 20
+        });
+    }
+
+    // Print table
+    function handlePrintTable() {
+        printTable({
+            elementId: 'logbook-table-print',
+            title: 'Logbook Harian'
+        });
+    }
+
     return (
         <AppLayout breadcrumbs={breadcrumbs(internshipActivity)}>
             <Head title={`Logbook Magang #${internshipActivity.id}`} />
@@ -138,8 +182,19 @@ export default function InternshipLogbookPage() {
                                 </div>
                             )}
                             <h2 className="font-semibold text-lg mb-4">Daftar Logbook</h2>
-                            {/* Search input di kanan atas ala presence.tsx */}
-                            <div className="flex justify-end mb-2">
+                            {/* Tombol export dan search input */}
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+                                <div className="flex gap-2 flex-wrap">
+                                    <Button size="sm" variant="outline" onClick={handleExportCSV} className="flex items-center gap-1">
+                                        <Download className="w-4 h-4" /> Export CSV
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={handleExportPDF} className="flex items-center gap-1">
+                                        <svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' /></svg> PDF
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={handlePrintTable} className="flex items-center gap-1">
+                                        <svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 9V2h12v7M6 18v4h12v-4M6 14h12' /></svg> Print
+                                    </Button>
+                                </div>
                                 <input
                                     type="text"
                                     placeholder="Cari tanggal, judul, deskripsi, status, feedback..."
@@ -148,7 +203,7 @@ export default function InternshipLogbookPage() {
                                     className="border rounded px-2 py-1 w-full md:w-72 text-sm"
                                 />
                             </div>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto" id="logbook-table-print">
                                 <table className="min-w-full border text-sm bg-white dark:bg-gray-900">
                                     <thead>
                                         <tr className="bg-gray-100 dark:bg-gray-800">

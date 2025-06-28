@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/id';
 import { useState, useMemo } from 'react';
 import { Download } from 'lucide-react';
+import { exportCSV, exportPDF, printTable } from '@/utils/exportUtils';
 
 dayjs.locale('id');
 
@@ -36,9 +37,9 @@ export default function MentorActivityPresence() {
     { key: 'summary', title: 'Ringkasan', href: `/mentor/activities/${activity?.id}` },
     { key: 'profile', title: 'Profil Mahasiswa', href: `/mentor/activities/${activity?.id}/profile` },
     { key: 'presence', title: 'Presensi', href: `/mentor/activities/${activity?.id}/presence` },
-    { key: 'logbook', title: 'Logbook', href: `/mentor/activities/${activity?.id}/logbook` },
     { key: 'assignments', title: 'Tugas', href: `/mentor/activities/${activity?.id}/assignments` },
-    { key: 'report', title: 'Laporan', href: `/mentor/activities/${activity?.id}/report` },
+    { key: 'logbook', title: 'Logbook', href: `/mentor/activities/${activity?.id}/logbook` },
+      { key: 'report', title: 'Laporan', href: `/mentor/activities/${activity?.id}/report` },
     { key: 'final-assessment', title: 'Penilaian Akhir', href: `/mentor/activities/${activity?.id}/final-assessment` },
   ];
 
@@ -86,17 +87,65 @@ export default function MentorActivityPresence() {
   }, [processedPresences]);
 
   // Export ke CSV
-  function exportCSV() {
+  function handleExportCSV() {
     const header = ['Tanggal', 'Hari', 'Jam Masuk', 'Jam Keluar', 'Status', 'Catatan'];
-    const rows = filteredPresences.map((p: any) => [p.date, p.day, p.check_in, p.check_out, p.status, p.notes]);
-    const csv = [header, ...rows].map(r => r.map(x => '"'+(x||'')+'"').join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `presensi_${activity?.id}_${filterMonth}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const rows = processedPresences.map((p: any) => [
+      p.date,
+      dayjs(p.date).locale('id').format('dddd'),
+      p.check_in,
+      p.check_out,
+      p.status,
+      p.notes
+    ]);
+    let monthLabel = '';
+    if (processedPresences.length > 0) {
+      const firstDate = processedPresences[0].date;
+      const d = dayjs(firstDate);
+      monthLabel = d.format('MMMM_YYYY');
+    } else {
+      monthLabel = dayjs().format('MMMM_YYYY');
+    }
+    exportCSV({
+      header,
+      rows,
+      filename: `presensi_${activity?.id}_${monthLabel}.csv`
+    });
+  }
+
+  // Export ke PDF
+  function handleExportPDF() {
+    const header = ['Tanggal', 'Hari', 'Jam Masuk', 'Jam Keluar', 'Status', 'Catatan'];
+    const rows = processedPresences.map((p: any) => [
+      dayjs(p.date).format('D MMMM YYYY'),
+      dayjs(p.date).locale('id').format('dddd'),
+      p.check_in || '-',
+      p.check_out || '-',
+      p.status,
+      p.notes || '-',
+    ]);
+    let monthLabel = '';
+    if (processedPresences.length > 0) {
+      const firstDate = processedPresences[0].date;
+      const d = dayjs(firstDate);
+      monthLabel = d.format('MMMM_YYYY');
+    } else {
+      monthLabel = dayjs().format('MMMM_YYYY');
+    }
+    exportPDF({
+      header,
+      rows,
+      filename: `presensi_${activity?.id}_${monthLabel}.pdf`,
+      title: 'Rekap Presensi Mahasiswa',
+      startY: 20
+    });
+  }
+
+  // Print table
+  function handlePrintTable() {
+    printTable({
+      elementId: 'presence-table-print',
+      title: 'Rekap Presensi Mahasiswa'
+    });
   }
 
   return (
@@ -126,9 +175,13 @@ export default function MentorActivityPresence() {
           <main className="flex-1">
             <div className="mb-6">
               <div className="p-4 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-white dark:bg-gray-900 mb-4">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                   <div className="font-semibold text-base">Rekap Presensi</div>
-                  <Button size="sm" variant="outline" onClick={exportCSV} className="flex items-center gap-1"><Download className="w-4 h-4" /> Export CSV</Button>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button size="sm" variant="outline" onClick={handleExportCSV} className="flex items-center gap-1"><Download className="w-4 h-4" /> Export CSV</Button>
+                    <Button size="sm" variant="outline" onClick={handleExportPDF} className="flex items-center gap-1"><svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' /></svg> PDF</Button>
+                    <Button size="sm" variant="outline" onClick={handlePrintTable} className="flex items-center gap-1"><svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 9V2h12v7M6 18v4h12v-4M6 14h12' /></svg> Print</Button>
+                  </div>
                 </div>
                 <div className="text-sm">Rekap: <span className="font-semibold text-green-700">Hadir: {rekap.hadir}</span> | <span className="font-semibold text-yellow-700">Izin: {rekap.izin}</span> | <span className="font-semibold text-red-700">Alpa: {rekap.alpa}</span></div>
               </div>
@@ -142,7 +195,7 @@ export default function MentorActivityPresence() {
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
-            <div className="mt-2 overflow-x-auto">
+            <div className="mt-2 overflow-x-auto" id="presence-table-print">
               <table className="min-w-full border text-sm bg-white dark:bg-gray-900">
                 <thead>
                   <tr className="bg-gray-100 dark:bg-gray-800">

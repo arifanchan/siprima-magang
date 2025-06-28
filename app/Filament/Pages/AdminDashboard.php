@@ -25,6 +25,7 @@ class AdminDashboard extends BaseDashboard
     {
         return [
             \App\Filament\Widgets\AdminStatsOverview::class,
+            \App\Filament\Widgets\NotificationWidget::class,
         ];
     }
 }

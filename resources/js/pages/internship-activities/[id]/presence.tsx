@@ -15,6 +15,8 @@ import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import 'dayjs/locale/id';
 import { useForm } from '@inertiajs/react';
+import { exportCSV, exportPDF, printTable } from '@/utils/exportUtils';
+import { Download } from 'lucide-react';
 
 // Konfigurasi dayjs untuk menggunakan locale Indonesia
 dayjs.extend(localizedFormat);
@@ -91,6 +93,50 @@ export default function InternshipPresencePage() {
     const today = new Date().toISOString().slice(0, 10);
     const isEnded = internshipActivity.end_date && today > internshipActivity.end_date;
 
+    // Export ke CSV
+    function handleExportCSV() {
+        const header = ['Tanggal', 'Hari', 'Check In', 'Check Out', 'Catatan'];
+        const rows = filteredPresences.map((item: any) => [
+            item.date,
+            dayjs(item.date).locale('id').format('dddd'),
+            item.check_in || '-',
+            item.check_out || '-',
+            item.notes || '-'
+        ]);
+        exportCSV({
+            header,
+            rows,
+            filename: `presensi_${internshipActivity?.id}_${dayjs().format('MMMM_YYYY')}.csv`
+        });
+    }
+
+    // Export ke PDF
+    function handleExportPDF() {
+        const header = ['Tanggal', 'Hari', 'Check In', 'Check Out', 'Catatan'];
+        const rows = filteredPresences.map((item: any) => [
+            dayjs(item.date).format('D MMMM YYYY'),
+            dayjs(item.date).locale('id').format('dddd'),
+            item.check_in || '-',
+            item.check_out || '-',
+            item.notes || '-'
+        ]);
+        exportPDF({
+            header,
+            rows,
+            filename: `presensi_${internshipActivity?.id}_${dayjs().format('MMMM_YYYY')}.pdf`,
+            title: 'Rekap Presensi Magang',
+            startY: 20
+        });
+    }
+
+    // Print table
+    function handlePrintTable() {
+        printTable({
+            elementId: 'presence-table-print',
+            title: 'Rekap Presensi Magang'
+        });
+    }
+
     return (
         <AppLayout breadcrumbs={breadcrumbs(internshipActivity)}>
             {/* Pesan sukses dan error */}
@@ -163,7 +209,18 @@ export default function InternshipPresencePage() {
                         </div>
                         <div className="mb-8">
                             <div className="font-semibold mb-2 text-base">Riwayat Presensi</div>
-                            <div className="mb-2 flex flex-col md:flex-row gap-2 items-center justify-end">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+                                <div className="flex gap-2 flex-wrap">
+                                    <Button size="sm" variant="outline" onClick={handleExportCSV} className="flex items-center gap-1">
+                                        <Download className="w-4 h-4" /> Export CSV
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={handleExportPDF} className="flex items-center gap-1">
+                                        <svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' /></svg> PDF
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={handlePrintTable} className="flex items-center gap-1">
+                                        <svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 9V2h12v7M6 18v4h12v-4M6 14h12' /></svg> Print
+                                    </Button>
+                                </div>
                                 <input
                                     type="text"
                                     placeholder="Cari tanggal, jam, atau catatan..."
@@ -172,7 +229,7 @@ export default function InternshipPresencePage() {
                                     onChange={e => setSearch(e.target.value)}
                                 />
                             </div>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto" id="presence-table-print">
                                 <table className="min-w-full border text-sm bg-white dark:bg-gray-900">
                                     <thead>
                                         <tr className="bg-gray-100 dark:bg-gray-800">

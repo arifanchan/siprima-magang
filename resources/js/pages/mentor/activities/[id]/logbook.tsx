@@ -16,6 +16,8 @@ import 'dayjs/locale/id';
 import FilePreviewButton from '@/components/ui/file-preview-button';
 import { Eye } from 'lucide-react';
 import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
+import { exportCSV, exportPDF, printTable } from '@/utils/exportUtils';
+import { Download } from 'lucide-react';
 
 export default function MentorLogbookPage() {
     const { activity, logbooks, student } = usePage().props as any;
@@ -37,8 +39,8 @@ export default function MentorLogbookPage() {
         { key: 'summary', title: 'Ringkasan', href: `/mentor/activities/${activity?.id}` },
         { key: 'profile', title: 'Profil Mahasiswa', href: `/mentor/activities/${activity?.id}/profile` },
         { key: 'presence', title: 'Presensi', href: `/mentor/activities/${activity?.id}/presence` },
-        { key: 'logbook', title: 'Logbook', href: `/mentor/activities/${activity?.id}/logbook` },
         { key: 'assignments', title: 'Tugas', href: `/mentor/activities/${activity?.id}/assignments` },
+        { key: 'logbook', title: 'Logbook', href: `/mentor/activities/${activity?.id}/logbook` },
         { key: 'report', title: 'Laporan', href: `/mentor/activities/${activity?.id}/report` },
         { key: 'final-assessment', title: 'Penilaian Akhir', href: `/mentor/activities/${activity?.id}/final-assessment` },
     ];
@@ -91,6 +93,48 @@ export default function MentorLogbookPage() {
     // Modal preview file
     const [modalOpen, setModalOpen] = useState(false);
 
+    // Export ke CSV
+    function handleExportCSV() {
+        const header = ['Tanggal', 'Judul Kegiatan', 'Status', 'Feedback'];
+        const rows = filteredLogbooks.map((item: any) => [
+            item.date ? formatTanggalIndo(item.date) : '-',
+            item.activity,
+            item.status,
+            item.feedback || '-'
+        ]);
+        exportCSV({
+            header,
+            rows,
+            filename: `logbook_${student?.user?.name || 'mahasiswa'}_${dayjs().format('MMMM_YYYY')}.csv`
+        });
+    }
+
+    // Export ke PDF
+    function handleExportPDF() {
+        const header = ['Tanggal', 'Judul Kegiatan', 'Status', 'Feedback'];
+        const rows = filteredLogbooks.map((item: any) => [
+            item.date ? formatTanggalIndo(item.date) : '-',
+            item.activity,
+            item.status,
+            item.feedback || '-'
+        ]);
+        exportPDF({
+            header,
+            rows,
+            filename: `logbook_${student?.user?.name || 'mahasiswa'}_${dayjs().format('MMMM_YYYY')}.pdf`,
+            title: `Logbook Harian - ${studentName}`,
+            startY: 20
+        });
+    }
+
+    // Print table
+    function handlePrintTable() {
+        printTable({
+            elementId: 'logbook-table-print',
+            title: `Logbook Harian - ${studentName}`
+        });
+    }
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Logbook Magang - ${studentName}`} />
@@ -121,7 +165,18 @@ export default function MentorLogbookPage() {
                     <main className="flex-1 min-w-0">
                         <Card className="mb-8 p-6">
                             <h2 className="font-semibold text-lg mb-4">Daftar Logbook Mahasiswa</h2>
-                            <div className="flex justify-end mb-2">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+                                <div className="flex gap-2 flex-wrap">
+                                    <Button size="sm" variant="outline" onClick={handleExportCSV} className="flex items-center gap-1">
+                                        <Download className="w-4 h-4" /> Export CSV
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={handleExportPDF} className="flex items-center gap-1">
+                                        <svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' /></svg> PDF
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={handlePrintTable} className="flex items-center gap-1">
+                                        <svg xmlns='http://www.w3.org/2000/svg' className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 9V2h12v7M6 18v4h12v-4M6 14h12' /></svg> Print
+                                    </Button>
+                                </div>
                                 <input
                                     type="text"
                                     placeholder="Cari tanggal, judul, deskripsi, status, feedback..."
@@ -130,7 +185,7 @@ export default function MentorLogbookPage() {
                                     className="border rounded px-2 py-1 w-full md:w-72 text-sm"
                                 />
                             </div>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto" id="logbook-table-print">
                                 <table className="min-w-full border text-sm bg-white dark:bg-gray-900">
                                     <thead>
                                         <tr className="bg-gray-100 dark:bg-gray-800">
