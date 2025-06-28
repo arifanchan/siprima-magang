@@ -65,13 +65,28 @@ export function AppSidebar() {
 
     const footerNavItems: NavItem[] = [
         {
-            title: 'Repository',
-            href: 'https://github.com/laravel/react-starter-kit',
-            icon: Folder,
+            title: 'Persetujuan',
+            href: '/consent',
+            icon: BookOpen,
         },
         {
-            title: 'Documentation',
-            href: 'https://laravel.com/docs/starter-kits#react',
+            title: 'Syarat & Ketentuan',
+            href: '/terms',
+            icon: BookOpen,
+        },
+        {
+            title: 'Privasi',
+            href: '/privacy',
+            icon: BookOpen,
+        },
+        {
+            title: 'Lisensi',
+            href: '/license',
+            icon: BookOpen,
+        },
+        {
+            title: 'Disclaimer',
+            href: '/disclaimer',
             icon: BookOpen,
         },
     ];

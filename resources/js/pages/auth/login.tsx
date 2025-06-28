@@ -109,6 +109,18 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 </div>
             </form>
 
+            <div className="mt-8 text-xs text-center text-muted-foreground space-x-2">
+                <TextLink href="/consent" target="_blank">Persetujuan</TextLink>
+                <span>|</span>
+                <TextLink href="/terms" target="_blank">Syarat & Ketentuan</TextLink>
+                <span>|</span>
+                <TextLink href="/privacy" target="_blank">Privasi</TextLink>
+                <span>|</span>
+                <TextLink href="/license" target="_blank">Lisensi</TextLink>
+                <span>|</span>
+                <TextLink href="/disclaimer" target="_blank">Disclaimer</TextLink>
+            </div>
+
             {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
         </AuthLayout>
     );

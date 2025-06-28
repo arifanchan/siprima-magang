@@ -295,5 +295,22 @@ Route::middleware(['auth', \App\Http\Middleware\RedirectIfStudent::class, 'can:i
     // TODO: Tambahkan route lain untuk mentor jika diperlukan
 });
 
+// Halaman legal dan persetujuan
+Route::get('/consent', function () {
+    return Inertia::render('consent');
+})->name('consent');
+Route::get('/terms', function () {
+    return Inertia::render('terms');
+})->name('terms');
+Route::get('/privacy', function () {
+    return Inertia::render('privacy');
+})->name('privacy');
+Route::get('/license', function () {
+    return Inertia::render('license');
+})->name('license');
+Route::get('/disclaimer', function () {
+    return Inertia::render('disclaimer');
+})->name('disclaimer');
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
