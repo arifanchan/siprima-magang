@@ -17,6 +17,7 @@ use App\Http\Controllers\ProfileEditController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\FinalAssessmentController;
+use App\Http\Controllers\InternshipManagementActionController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -311,6 +312,16 @@ Route::get('/license', function () {
 Route::get('/disclaimer', function () {
     return Inertia::render('disclaimer');
 })->name('disclaimer');
+
+// Internship management routes for admin
+Route::prefix('admin/internship-managements')->middleware(['web', 'auth'])->group(function () {
+    Route::post('{id}/approve', [InternshipManagementActionController::class, 'approve'])->name('internship-managements.approve');
+    Route::match(['get', 'post'], '{id}/assign-mentor', [InternshipManagementActionController::class, 'assignMentor'])->name('internship-managements.assign-mentor');
+    Route::post('{id}/upload-letter', [InternshipManagementActionController::class, 'uploadLetter'])->name('internship-managements.upload-letter');
+    Route::post('{id}/upload-certificate', [InternshipManagementActionController::class, 'uploadCertificate'])->name('internship-managements.upload-certificate');
+    Route::get('{id}/edit', [InternshipManagementActionController::class, 'edit'])->name('internship-management.edit');
+    Route::put('{id}', [InternshipManagementActionController::class, 'update'])->name('internship-management.update');
+});
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

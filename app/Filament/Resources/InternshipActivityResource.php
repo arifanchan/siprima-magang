@@ -64,7 +64,9 @@ class InternshipActivityResource extends Resource
                         return now()->format('Y-m-d') . '_' . $file->getClientOriginalName();
                     })
                     ->preserveFilenames()
-                    ->maxSize(10240),
+                    ->maxSize(10240)
+                    ->downloadable(true)
+                    ->previewable(true),
                 Forms\Components\FileUpload::make('final_report')
                     ->label('Final Report')
                     ->disk('public')
